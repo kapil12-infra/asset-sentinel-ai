@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Asset Sentinel AI · Build Studio</title>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#070a1c; --panel:#0d1230; --panel-2:#111738; --line:#1f2750;
+  --text:#f2f4ff; --muted:#9aa3c7;
+  --violet:#8b3dff; --violet-2:#a855f7; --indigo:#5b4bff; --cyan:#22d3ee;
+  --green:#22c55e; --amber:#f5a524; --red:#ef4444; --radius:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+  background:radial-gradient(1200px 600px at 80% -10%,#1d1052 0%,transparent 60%),var(--bg);
+  color:var(--text); font-size:14px; line-height:1.4; -webkit-text-size-adjust:100%;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:12.5px;padding:6px 8px;white-space:nowrap}
+td{padding:10px 8px;border-top:1px solid var(--line);vertical-align:middle}
+.tw{overflow-x:auto}
+
+.app{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+.sidebar{
+  background:linear-gradient(180deg,#0a0e26,#080b1f);border-right:1px solid var(--line);
+  padding:18px 14px;display:flex;flex-direction:column;gap:6px;position:sticky;top:0;height:100vh;overflow-y:auto;z-index:40;
+}
+.brand{display:flex;align-items:center;gap:10px;padding:4px 6px 18px}
+.brand b{display:block;font-size:17px;letter-spacing:-.2px}
+.brand b span{color:var(--violet-2)}
+.brand small{color:var(--muted);font-size:12px}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav button{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border-radius:10px;color:#c9cffa;text-align:left;font-size:14.5px}
+.nav button:hover{background:#151b40}
+.nav button.active{background:linear-gradient(90deg,var(--violet),var(--indigo));color:#fff;font-weight:600;box-shadow:0 6px 20px -8px var(--violet)}
+.nav .chev{margin-left:auto;width:16px;height:16px;transition:transform .2s}
+.nav .open .chev{transform:rotate(180deg)}
+.sub{display:none;flex-direction:column;margin:2px 0 4px 22px;padding-left:14px;border-left:1px solid var(--line)}
+.sub.show{display:flex}
+.sub button{padding:8px 10px;font-size:13.5px;color:var(--muted)}
+.sub button.active{color:#fff;background:#1b2250;box-shadow:none;font-weight:600}
+.sub svg{width:16px;height:16px}
+.usage{margin-top:auto;padding:14px;border-radius:12px;background:linear-gradient(160deg,#1a1450,#0f1236);border:1px solid var(--line)}
+.usage .row{display:flex;align-items:center;gap:8px;font-size:12.5px;color:#d6dbff;font-weight:600}
+.usage .row svg{width:16px;height:16px;color:var(--violet-2)}
+.usage .nums{display:flex;justify-content:space-between;margin:10px 0 8px;font-size:13px}
+.bar{height:7px;border-radius:99px;background:#232a5a;overflow:hidden}
+.bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--violet),var(--violet-2));transition:width .4s}
+.bar.big{height:9px;margin-top:14px}
+.scrim{position:fixed;inset:0;background:rgba(3,5,18,.7);z-index:35;display:none}
+.scrim.on{display:block}
+
+.main{padding:14px 22px 40px;min-width:0}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;position:relative}
+.menu-btn{display:none}
+.search{position:relative;flex:1;max-width:520px}
+.search label{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:0 12px;height:42px;color:var(--muted)}
+.search label:focus-within{border-color:var(--violet)}
+.search input{flex:1;min-width:0;background:none;border:none;color:var(--text);font:inherit;outline:none;height:100%}
+.search input::placeholder{color:var(--muted)}
+.kbd{font-size:11.5px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;background:#171d45}
+.drop{position:absolute;top:calc(100% + 8px);left:0;right:0;background:#0f1538;border:1px solid var(--line);border-radius:12px;padding:6px;z-index:30;display:none;max-height:340px;overflow:auto;box-shadow:0 20px 50px -16px #000}
+.drop.on{display:block}
+.drop button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:9px 10px;border-radius:8px;color:#dfe3ff}
+.drop button:hover,.drop button:focus-visible{background:#1a2150}
+.drop small{color:var(--muted);margin-left:auto}
+.drop h4{font-size:11.5px;color:var(--muted);padding:6px 10px 2px;font-weight:600}
+.spacer{flex:1}
+.icon-btn{position:relative;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel);color:#cfd5ff;flex:none}
+.icon-btn:hover{border-color:var(--violet)}
+.dot{position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:var(--violet-2);border:2px solid var(--panel)}
+.rel{position:relative}
+.drop.right{left:auto;right:0;width:300px}
+.user{display:flex;align-items:center;gap:10px;padding:4px 8px;border-radius:12px}
+.avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;background:linear-gradient(135deg,var(--violet),var(--indigo));flex:none}
+.user b{display:block;font-size:14px}
+.user small{color:var(--muted);font-size:12px}
+
+.hero{position:relative;overflow:hidden;border-radius:18px;padding:30px 34px;background:linear-gradient(110deg,#0f0f3a 0%,#2a1272 55%,#4a1fa8 100%);border:1px solid #3b2a8f;display:grid;grid-template-columns:1.15fr 1fr auto;gap:20px;align-items:center;min-height:240px}
+.hero::after{content:"";position:absolute;inset:0;background:radial-gradient(500px 240px at 62% 110%,rgba(139,61,255,.55),transparent 70%);pointer-events:none}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-size:34px;line-height:1.12;letter-spacing:-.8px;max-width:460px}
+.hero h1 em{font-style:normal;background:linear-gradient(90deg,#4cc9ff,#b07bff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p{margin:12px 0 20px;color:#c6c9f2;max-width:440px;font-size:15px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:10px;font-weight:600;font-size:14.5px}
+.btn svg{width:18px;height:18px}
+.btn.primary{background:linear-gradient(90deg,var(--violet),#6d3cff);box-shadow:0 10px 24px -10px var(--violet)}
+.btn.primary:hover{filter:brightness(1.12)}
+.btn.ghost{border:1px solid #4a4f94;background:rgba(10,12,40,.5)}
+.btn.ghost:hover{border-color:#fff}
+.btn.danger{background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.5)}
+.btn.sm{padding:8px 14px;font-size:13.5px}
+.btn[disabled]{opacity:.6;cursor:not-allowed}
+.robot{display:grid;place-items:center}
+.robot svg{width:100%;max-width:300px;height:auto;stroke:none;fill:none}
+.checks{background:rgba(10,12,44,.55);border:1px solid #3a3a8c;border-radius:14px;padding:16px 20px;display:flex;flex-direction:column;gap:12px}
+.checks div{display:flex;align-items:center;gap:10px;font-size:14.5px;color:#e6e8ff}
+.ok{width:22px;height:22px;border-radius:50%;background:var(--green);display:grid;place-items:center;flex:none}
+.ok svg{width:13px;height:13px;stroke:#04210f;stroke-width:3}
+
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:12px 0}
+.stat{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px;text-align:left;width:100%}
+button.stat:hover{border-color:var(--violet)}
+.stat .ic{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;flex:none}
+.stat .ic svg{width:22px;height:22px}
+.stat b{display:block;font-size:22px;letter-spacing:-.4px}
+.stat span{color:var(--muted);font-size:13.5px}
+
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:1.75fr 1fr}
+.g3{grid-template-columns:1fr 1.15fr;margin-top:12px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;min-width:0}
+.panel h2{display:flex;align-items:center;gap:10px;font-size:16.5px;margin-bottom:12px}
+.panel h2 svg{color:var(--violet-2)}
+.panel h2 .lnk{margin-left:auto;font-size:12.5px;color:var(--violet-2);font-weight:500;display:flex;align-items:center;gap:4px;cursor:pointer}
+.panel h2 .lnk svg{width:14px;height:14px}
+.pill{display:inline-block;padding:5px 12px;border-radius:99px;font-size:12.5px;background:#1a2150;border:1px solid var(--line);color:#d5d9ff;white-space:nowrap}
+.status,.chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:99px;font-weight:600;font-size:12.5px;white-space:nowrap}
+.status svg,.chip svg{width:13px;height:13px;stroke-width:3}
+.pass,.chip.ok2{background:rgba(34,197,94,.14);color:#4ade80;border:1px solid rgba(34,197,94,.45)}
+.warn,.chip.warn2{background:rgba(245,165,36,.14);color:#fbbf24;border:1px solid rgba(245,165,36,.45)}
+.run{background:rgba(34,211,238,.12);color:var(--cyan);border:1px solid rgba(34,211,238,.4)}
+.fail,.chip.bad{background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.45)}
+.none,.chip.mut{background:#1a2150;color:var(--muted);border:1px solid var(--line)}
+.proj{display:flex;align-items:center;gap:12px;text-align:left}
+.proj .pi{width:38px;height:38px;border-radius:9px;display:grid;place-items:center;flex:none}
+.proj b{display:block;font-size:14px}
+.proj small{color:var(--muted);font-size:12px}
+button.proj:hover b{color:var(--violet-2)}
+.acts{display:flex;align-items:center;gap:6px}
+.run-btn{width:32px;height:32px;border-radius:50%;background:#1d2455;display:grid;place-items:center}
+.run-btn:hover{background:var(--violet)}
+.run-btn svg{width:14px;height:14px}
+.more{width:30px;height:30px;border-radius:8px;color:var(--muted);display:grid;place-items:center}
+.more:hover{background:#1d2455;color:#fff}
+
+.quick{display:flex;flex-direction:column;gap:8px}
+.quick button{display:flex;align-items:center;gap:14px;text-align:left;width:100%;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.quick button:hover{border-color:var(--violet);background:#151b45}
+.quick .qi{color:var(--violet-2)}
+.quick .qi svg{width:26px;height:26px}
+.quick b{display:block;font-size:14.5px}
+.quick small{color:var(--muted);font-size:12.5px}
+.quick .go{margin-left:auto;color:var(--muted)}
+.quick .go svg{width:16px;height:16px}
+.activity{display:flex;flex-direction:column;gap:8px}
+.act{display:flex;align-items:center;gap:12px;background:var(--panel-2);border-radius:10px;padding:10px 12px}
+.act .ai{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;flex:none}
+.act .ai svg{width:17px;height:17px}
+.act span{flex:1;font-size:14px}
+.act time{color:var(--muted);font-size:13px;white-space:nowrap}
+.trend-wrap{display:grid;grid-template-columns:1fr 150px;gap:14px;align-items:stretch}
+.chart svg{width:100%;height:auto;display:block;stroke:none;fill:none}
+.mini{display:flex;flex-direction:column;gap:10px}
+.mini div{flex:1;display:flex;align-items:center;gap:12px;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.mini b{display:block;font-size:18px}
+.mini span{font-size:12.5px;color:var(--muted)}
+
+.page-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.page-h h1{font-size:24px;letter-spacing:-.4px}
+.page-h p{color:var(--muted);margin-top:2px}
+.grow{flex:1;min-width:200px}
+.crumb{color:var(--muted);font-size:13px;margin-bottom:10px;display:flex;gap:6px;flex-wrap:wrap}
+.crumb button{color:var(--muted)}
+.crumb button:hover{color:#fff;text-decoration:underline}
+.tabs{display:flex;gap:6px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto}
+.tabs button{padding:10px 14px;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap}
+.tabs button:hover{color:#fff}
+.tabs button.on{color:#fff;border-color:var(--violet-2);font-weight:600}
+.fl{margin-bottom:14px}
+.fl label{display:block;font-size:13px;color:var(--muted);margin-bottom:5px}
+.fi{width:100%;background:#0a0f2c;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:11px 12px;font:inherit}
+.fi:focus{outline:none;border-color:var(--violet)}
+textarea.fi{resize:vertical;min-height:110px}
+select.fi{appearance:none;background-image:linear-gradient(45deg,transparent 50%,#9aa3c7 50%),linear-gradient(135deg,#9aa3c7 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 12px) 50%;background-size:6px 6px;background-repeat:no-repeat;padding-right:32px}
+.fi.auto{width:auto;min-width:160px}
+.toolbar{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.toolbar .fi{flex:1;min-width:180px}
+.toolbar .fi.auto{flex:none}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:#0a0f2c;padding:10px 16px;border-radius:10px;display:flex;gap:8px;align-items:center;color:#cfd5ff}
+.seg button.on{border-color:var(--violet-2);background:rgba(139,61,255,.18);color:#fff}
+.seg button svg{width:18px;height:18px}
+.cards{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.cards.c3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:18px 12px;border-radius:14px;background:var(--panel);border:1px solid var(--line);text-align:center}
+.tile:hover{border-color:var(--violet)}
+.tile.on{border-color:var(--violet-2);box-shadow:0 0 0 1px var(--violet-2) inset;background:#161b4a}
+.tile svg{width:34px;height:34px}
+.tile b{font-size:14.5px}
+.tile small{color:var(--muted);font-size:12.5px}
+.sec{font-size:17px;margin:18px 0 10px}
+.dl{display:grid;grid-template-columns:140px 1fr;gap:12px 16px;align-items:center}
+.dl dt{color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.tech{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:8px;background:#1a2150;border:1px solid var(--line);font-size:13px}
+.empty{color:var(--muted);padding:18px 8px;text-align:center}
+.kpi{display:flex;flex-direction:column;align-items:center;gap:2px;padding:14px 8px;border-radius:12px;background:var(--panel-2);border:1px solid var(--line);text-align:center}
+.kpi b{font-size:24px}
+.kpi span{color:var(--muted);font-size:13px}
+.kpi.warnc b{color:#fbbf24}.kpi.badc b{color:#f87171}.kpi.okc b{color:#4ade80}.kpi.infoc b{color:#60a5fa}
+.sev{font-weight:700;font-size:12.5px;padding:4px 10px;border-radius:99px;white-space:nowrap}
+.sev.Critical{background:rgba(239,68,68,.2);color:#fca5a5}
+.sev.High{background:rgba(249,115,22,.18);color:#fdba74}
+.sev.Medium{background:rgba(245,165,36,.16);color:#fbbf24}
+.sev.Low{background:rgba(59,130,246,.18);color:#93c5fd}
+.rec{display:flex;gap:12px;align-items:flex-start;background:var(--panel-2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.rec>div{flex:1}
+.rec small{color:var(--muted);display:block;margin-top:2px}
+.env-card{border:1.5px solid var(--line);border-radius:12px;padding:14px;text-align:left;background:var(--panel-2);display:block;width:100%}
+.env-card.on{border-color:#4ade80;background:rgba(34,197,94,.08)}
+.env-card b{display:block;font-size:16px}
+.env-card small{color:var(--muted);display:block}
+.env-card .st{margin-top:8px;font-weight:600;font-size:13px;display:block}
+.env-card .st.good{color:#4ade80}.env-card .st.dim{color:var(--muted)}.env-card .st.badt{color:#f87171}
+pre.log{background:#070b22;border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;font:12.5px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#c8d0ff;max-height:380px;white-space:pre}
+.sw{position:relative;width:44px;height:25px;border-radius:99px;background:#2a3170;flex:none;transition:background .2s}
+.sw::after{content:"";position:absolute;top:3px;left:3px;width:19px;height:19px;border-radius:50%;background:#fff;transition:transform .2s}
+.sw.on{background:var(--violet)}
+.sw.on::after{transform:translateX(19px)}
+.prefrow{display:flex;align-items:center;gap:14px;padding:12px 0;border-top:1px solid var(--line)}
+.prefrow:first-child{border-top:none}
+.prefrow div{flex:1}
+.prefrow small{color:var(--muted);display:block}
+.integ{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;text-align:center}
+.integ .lg{width:54px;height:54px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:15px;background:#fff;color:#111}
+.integ b{font-size:15px}
+.integ .cb{width:100%;padding:8px;border-radius:9px;font-weight:600;font-size:13.5px;border:1px solid var(--line);background:#141a45}
+.integ .cb.on{background:rgba(34,197,94,.12);color:#4ade80;border-color:rgba(34,197,94,.45)}
+.integ .cb:hover{border-color:var(--violet)}
+.agent{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px 4px;border-top:1px solid var(--line)}
+.agent:first-child{border-top:none}
+.agent:hover b{color:var(--violet-2)}
+.agent .ai{width:40px;height:40px;border-radius:10px;display:grid;place-items:center;background:#1a2150;color:var(--violet-2);flex:none}
+.agent small{color:var(--muted);display:block}
+.agent .go{margin-left:auto;color:var(--muted)}
+.mon-live{display:inline-flex;align-items:center;gap:6px;color:#4ade80;font-size:12.5px;font-weight:600}
+.mon-live::before{content:"";width:8px;height:8px;border-radius:50%;background:#4ade80;box-shadow:0 0 0 0 rgba(74,222,128,.7);animation:pulse 1.6s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 8px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+
+.ide{display:grid;grid-template-columns:220px minmax(0,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#080c26;min-height:460px}
+.explorer{border-right:1px solid var(--line);padding:10px 6px;overflow:auto;max-height:560px}
+.explorer h4{display:flex;align-items:center;padding:4px 8px 8px;font-size:13.5px}
+.explorer h4 button{margin-left:auto;color:var(--violet-2);font-size:12px}
+.tr{display:flex;align-items:center;gap:6px;width:100%;text-align:left;padding:5px 8px;border-radius:6px;font-size:13px;color:#cfd5ff;white-space:nowrap}
+.tr:hover{background:#151b45}
+.tr.on{background:#1f2658;color:#fff}
+.tr svg{width:15px;height:15px}
+.editor{display:flex;flex-direction:column;min-width:0}
+.etabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;background:#0a0f2c}
+.etab{display:flex;align-items:center;gap:8px;padding:9px 12px;font-size:13px;color:var(--muted);border-right:1px solid var(--line);white-space:nowrap}
+.etab.on{color:#fff;background:#080c26;box-shadow:inset 0 -2px var(--violet-2)}
+.etab i{width:7px;height:7px;border-radius:50%;background:#fbbf24}
+.etab .x{color:var(--muted);width:16px;height:16px}
+.ebar{display:flex;gap:8px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.ebar span{color:var(--muted);font-size:12.5px;flex:1;min-width:120px}
+.ebody{display:flex;flex:1;min-height:360px;max-height:520px}
+.gut{margin:0;padding:12px 10px 12px 12px;text-align:right;color:#5a638f;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow:hidden;user-select:none;background:#080c26;border-right:1px solid #151b45}
+#code{flex:1;min-width:0;background:#080c26;color:#d6dcff;border:none;outline:none;resize:none;padding:12px;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre;tab-size:2;overflow:auto}
+
+#modalRoot{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;padding:16px}
+#modalRoot.on{display:flex}
+.scrim2{position:absolute;inset:0;background:rgba(3,5,18,.78)}
+.dlg{position:relative;width:100%;max-width:480px;max-height:92vh;overflow:auto;background:#0e1335;border:1px solid #333c85;border-radius:16px;box-shadow:0 30px 80px -20px #000}
+.dlg.wide{max-width:680px}
+.dh{display:flex;align-items:center;padding:16px 18px 6px}
+.dh h3{font-size:18px;flex:1}
+.dh .x{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--muted)}
+.dh .x:hover{background:#1d2455;color:#fff}
+.db{padding:8px 18px 14px}
+.df{display:flex;gap:10px;justify-content:flex-end;padding:0 18px 18px;flex-wrap:wrap}
+.stl{list-style:none;display:flex;flex-direction:column;gap:10px;margin-top:6px}
+.stl li{display:flex;align-items:center;gap:10px;color:var(--muted)}
+.stl .sd{width:14px;height:14px;border-radius:50%;border:2px solid #3a4390;flex:none}
+.stl li.act{color:#fff}.stl li.act .sd{border-color:var(--cyan);border-top-color:transparent;animation:spin .8s linear infinite}
+.stl li.done{color:#d6dbff}.stl li.done .sd{background:var(--green);border-color:var(--green)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.menu-list{display:flex;flex-direction:column;gap:6px}
+.menu-list button{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;background:var(--panel-2);border:1px solid var(--line);text-align:left}
+.menu-list button:hover{border-color:var(--violet)}
+.menu-list .dng{color:#fca5a5}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#171d49;border:1px solid var(--violet);padding:12px 18px;border-radius:12px;display:none;z-index:80;box-shadow:0 14px 40px -12px #000;max-width:92vw}
+.toast.show{display:block}
+.hidden{display:none!important}
+
+@media (max-width:1280px){
+  .hero{grid-template-columns:1fr 1fr}
+  .checks{grid-column:1/-1;flex-direction:row;flex-wrap:wrap}
+  .stats{grid-template-columns:repeat(3,1fr)}
+  .g2,.g3{grid-template-columns:1fr}
+  .g4{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .sidebar{position:fixed;left:0;top:0;bottom:0;width:280px;transform:translateX(-102%);transition:transform .22s}
+  .sidebar.open{transform:none}
+  .menu-btn{display:grid}
+  .main{padding:12px 12px 40px}
+  .hero{grid-template-columns:1fr;padding:22px}
+  .robot{display:none}
+  .hero h1{font-size:26px}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .trend-wrap{grid-template-columns:1fr}
+  .mini{flex-direction:row}
+  .user>div,.kbd{display:none}
+  .cards.c3{grid-template-columns:1fr 1fr}
+  .ide{grid-template-columns:1fr}
+  .explorer{max-height:180px;border-right:none;border-bottom:1px solid var(--line)}
+  .dl{grid-template-columns:110px 1fr}
+  .hide-m{display:none}
+  .drop.right{position:fixed;left:12px;right:12px;top:64px;width:auto}
+}
+@media (max-width:520px){ .cards.c3{grid-template-columns:1fr} .g4{grid-template-columns:1fr 1fr} .stats{grid-template-columns:1fr 1fr} .stat{padding:12px;gap:10px} .stat .ic{width:38px;height:38px} .stat b{font-size:18px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></symbol>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5M3 17.5l9 5 9-5" opacity=".7"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><circle cx="12" cy="12" r="1.5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 01-.5-9A6 6 0 0118 10a4 4 0 01-.5 8H7z"/><path d="M12 17v-6M9.5 13.5L12 11l2.5 2.5"/></symbol>
+    <symbol id="i-server" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="7" rx="2"/><rect x="4" y="13" width="16" height="7" rx="2"/><path d="M8 7.5h.01M8 16.5h.01"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9"/></symbol>
+    <symbol id="i-puzzle" viewBox="0 0 24 24"><path d="M10 4a2 2 0 114 0v2h4v4h-2a2 2 0 100 4h2v4h-4v-2a2 2 0 10-4 0v2H6v-4h2a2 2 0 100-4H6V6h4V4z"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 17V11a6 6 0 1112 0v6l2 2H4l2-2zM10 21a2 2 0 004 0"/></symbol>
+    <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.9.6-1.5 1-1.5 2M12 17h.01"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-check-c" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></symbol>
+    <symbol id="i-bug" viewBox="0 0 24 24"><rect x="8" y="8" width="8" height="11" rx="4"/><path d="M9 8a3 3 0 016 0M4 12h4M16 12h4M5 6l3 2.5M19 6l-3 2.5M5 19l3-2.5M19 19l-3-2.5"/></symbol>
+    <symbol id="i-rocket" viewBox="0 0 24 24"><path d="M5 15c-1 1-1.5 4-1.5 4s3-.5 4-1.5M14 4c3-1 6-1 6-1s0 3-1 6l-6 6-5-5 6-6z"/><circle cx="14.5" cy="9.5" r="1.4"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 002 3h10a2 2 0 002-3l-5-9V3"/><path d="M7.5 15h9"/></symbol>
+    <symbol id="i-pulse" viewBox="0 0 24 24"><path d="M3 12h4l2.5-6 4 12 2.5-6H21"/></symbol>
+    <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/></symbol>
+    <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" fill="currentColor"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16v4zM13 7l4 4"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 11l5 5 5-5M5 20h14"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6M16 5a3 3 0 010 6M18 14c2 .7 3 2.6 3 5"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10M14 4v6M6 14v6"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H5a1 1 0 00-1 1v14a1 1 0 001 1h5M16 8l4 4-4 4M20 12H9"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 5v5h-5M4 19v-5h5M5.6 9A8 8 0 0119 8.5M18.4 15A8 8 0 015 15.5"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+    <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/></symbol>
+    <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="M12 3l2 6 6 2-6 2-2 6-2-6-6-2 6-2 2-6z"/></symbol>
+    <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9 9 0 1116 0M12 18l4-6"/></symbol>
+  </defs>
+</svg>
+
+<div class="scrim" id="scrim" data-a="closeDrawer"></div>
+<div class="app">
+  <aside class="sidebar" id="side" aria-label="Primary">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" style="stroke:none;fill:none;width:38px;height:38px">
+        <defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#7c3aed"/></linearGradient></defs>
+        <path d="M20 3l15 5v11c0 9-6 15-15 18C11 34 5 28 5 19V8l15-5z" fill="#0b1030" stroke="url(#g1)" stroke-width="2.4"/>
+        <rect x="12" y="20" width="4" height="8" rx="1" fill="#22d3ee"/><rect x="18" y="15" width="4" height="13" rx="1" fill="#6d5dfc"/><rect x="24" y="11" width="4" height="17" rx="1" fill="#a855f7"/>
+      </svg>
+      <div><b>Asset Sentinel <span>AI</span></b><small>Build Studio</small></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-nav="dashboard" data-a="go:dashboard"><svg><use href="#i-home"/></svg>Dashboard</button>
+      <button data-nav="build" data-a="go:build"><svg><use href="#i-code"/></svg>Build App</button>
+      <button data-nav="projects" data-a="go:projects"><svg><use href="#i-layers"/></svg>My Projects</button>
+      <button data-nav="agents" data-a="go:agents"><svg><use href="#i-cpu"/></svg>AI Agents</button>
+      <button id="qaToggle" data-a="toggleQA" aria-expanded="false"><svg><use href="#i-shield"/></svg>Testing (QA)<svg class="chev"><use href="#i-chev"/></svg></button>
+      <div class="sub" id="qaSub">
+        <button data-sub="functional" data-a="go:qa:functional"><svg><use href="#i-flask"/></svg>Functional Tests</button>
+        <button data-sub="api" data-a="go:qa:api"><svg><use href="#i-server"/></svg>API Tests</button>
+        <button data-sub="automation" data-a="go:qa:automation"><svg><use href="#i-gear"/></svg>Automation (Playwright)</button>
+        <button data-sub="security" data-a="go:security"><svg><use href="#i-shield"/></svg>Security Scan (ZAP)</button>
+        <button data-sub="performance" data-a="go:qa:performance"><svg><use href="#i-pulse"/></svg>Performance (k6)</button>
+      </div>
+      <button data-nav="deploy" data-a="go:deploy"><svg><use href="#i-cloud"/></svg>Deploy</button>
+      <button data-nav="environments" data-a="go:environments"><svg><use href="#i-server"/></svg>Environments</button>
+      <button data-nav="monitoring" data-a="go:monitoring"><svg><use href="#i-chart"/></svg>Monitoring</button>
+      <button data-nav="integrations" data-a="go:integrations"><svg><use href="#i-puzzle"/></svg>Integrations</button>
+      <button data-nav="settings" data-a="go:settings"><svg><use href="#i-gear"/></svg>Settings</button>
+    </nav>
+    <div class="usage">
+      <div class="row"><svg><use href="#i-bolt"/></svg>AI Usage (This Month)</div>
+      <div class="nums"><b id="usageNums">1.2M / 5M tokens</b><b id="usagePct">24%</b></div>
+      <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="usageBar"><i id="usageFill" style="width:24%"></i></div>
+    </div>
+  </aside>
+
+  <main class="main" id="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" data-a="openDrawer" aria-label="Open menu"><svg><use href="#i-menu"/></svg></button>
+      <div class="search" id="searchBox">
+        <label>
+          <svg><use href="#i-search"/></svg>
+          <input type="search" id="q" placeholder="Search projects, apps, tests..." autocomplete="off" aria-label="Search projects, apps, tests">
+          <span class="kbd">⌘ K</span>
+        </label>
+        <div class="drop" id="results"></div>
+      </div>
+      <div class="spacer"></div>
+      <div class="rel">
+        <button class="icon-btn" data-a="notif" aria-label="Notifications"><svg><use href="#i-bell"/></svg><span class="dot" id="bellDot"></span></button>
+        <div class="drop right" id="notifDrop"></div>
+      </div>
+      <button class="icon-btn hide-m" data-a="help" aria-label="Help"><svg><use href="#i-help"/></svg></button>
+      <div class="rel">
+        <button class="user" data-a="userMenu" aria-label="Account menu">
+          <span class="avatar" id="uAv">KC</span>
+          <div style="text-align:left"><b id="uName">Kapil Chavan</b><small id="uRole">Platform Engineer</small></div>
+          <svg style="width:16px;height:16px"><use href="#i-chev"/></svg>
+        </button>
+        <div class="drop right" id="userDrop"></div>
+      </div>
+    </header>
+    <div id="view"></div>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+/* ========== helpers ========== */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=(n,c)=>'<svg'+(c?' class="'+c+'"':'')+'><use href="#i-'+n+'"/></svg>';
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const pad=n=>String(n).padStart(2,'0');
+let seq=0; const uid=p=>p+(++seq)+Math.random().toString(36).slice(2,5);
+const D=(m,d,h,mi)=>new Date(2026,m-1,d,h,mi);
+const fmt=d=>d?d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})+' '+d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'}):'–';
+const fmtT=d=>d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+const fmtDur=s=>Math.floor(s/60)+'m '+(s%60)+'s';
+const num=n=>n.toLocaleString('en-US');
+const initials=n=>n.split(/\s+/).map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+let tt;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),2600);}
+function download(name,text){try{const b=new Blob([text],{type:'text/plain'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),500);}catch(e){toast('Download is not available here');}}
+function copy(text){try{navigator.clipboard.writeText(text).then(()=>toast('Copied to clipboard'),()=>toast('Copy failed'));}catch(e){toast('Copy failed');}}
+
+/* ========== modal ========== */
+let mid=0;
+function closeModal(){const r=$('#modalRoot');r.classList.remove('on');r.innerHTML='';r.dataset.id='';r.dataset.lock='';}
+function modal(title,body,btns,o){
+  btns=btns||[];o=o||{};const id=String(++mid);const r=$('#modalRoot');
+  r.innerHTML='<div class="scrim2" data-a="'+(o.lock?'noop':'closeModal')+'"></div><div class="dlg'+(o.wide?' wide':'')+'" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="dh"><h3>'+esc(title)+'</h3>'+(o.lock?'':'<button class="x" data-a="closeModal" aria-label="Close">'+ic('x')+'</button>')+'</div><div class="db">'+body+'</div>'+(btns.length?'<div class="df">'+btns.map((b,i)=>'<button class="btn '+(b.k||'ghost')+' sm" data-mb="'+i+'">'+esc(b.t)+'</button>').join('')+'</div>':'')+'</div>';
+  r.dataset.id=id;r.classList.add('on');r.dataset.lock=o.lock?'1':'';
+  $$('[data-mb]',r).forEach(el=>el.addEventListener('click',()=>{const b=btns[+el.dataset.mb];const res=b.f?b.f():undefined;if(res!==false&&r.dataset.id===id)closeModal();}));
+  if(!o.noFocus){const f=$('input,textarea,select',r);if(f)f.focus();}
+}
+function progress(title,steps,done,d){
+  d=d||460;
+  modal(title,'<ul class="stl">'+steps.map(s=>'<li><span class="sd"></span>'+esc(s)+'</li>').join('')+'</ul><div class="bar big"><i id="pb" style="width:0"></i></div>',[],{lock:true,noFocus:true});
+  const lis=$$('.stl li');let i=0;
+  (function step(){
+    if(i>0&&lis[i-1])lis[i-1].className='done';
+    if(i<lis.length){lis[i].className='act';const pb=$('#pb');if(pb)pb.style.width=((i+1)/lis.length*100)+'%';i++;setTimeout(step,d+rnd(0,180));}
+    else setTimeout(()=>{closeModal();if(done)done();},300);
+  })();
+}
+
+/* ========== data ========== */
+const COLORS=[['#16306b','#5fb3ff'],['#2a2060','#b69bff'],['#103d2c','#4ade80'],['#4a2a10','#fdba74'],['#4a1634','#f9a8d4'],['#0e3b46','#67e8f9']];
+const WEB_STACK=['React','NestJS','PostgreSQL','Docker'];
+function mkProject(o){return Object.assign({id:uid('p'),sub:'',type:'Web App',status:'none',issues:0,stack:WEB_STACK.slice(),desc:'',state:'In Progress',created:new Date(),updated:new Date(),lastRun:null,files:null,saved:null,color:pick(COLORS)},o);}
+const S={
+  route:{name:'dashboard'},qaSuite:'functional',buildType:'Web App',draft:'',depProject:null,depStage:'DEV',depMethod:'Docker (Recommended)',
+  secProject:null,secTab:'vulns',settingsTab:'profile',unread:true,tokens:1200000,tokenCap:5000000,
+  stats:{tests:1248,passed:1226,bugs:23},trend:[350,520,470,730,680,730,980],
+  user:{name:'Kapil Chavan',email:'kapil.chavan@assetsentinel.ai',role:'Platform Engineer',org:'Asset Sentinel Pvt. Ltd.'},
+  prefs:{emailNotif:true,autoTest:true,autoScan:true,autoDeploy:false},
+  ed:{pid:null,open:[],active:null,closed:{}},
+  projects:[],runs:[],scans:{},activity:[],envs:[],agents:[],integ:[],keys:[],team:[],mon:null,monT:null,projFilter:'',projStatus:'',envProject:''
+};
+S.projects=[
+  mkProject({id:'p-gov',name:'GovRakshak HRMS',sub:'HR & Asset Management',type:'Web App',status:'pass',lastRun:D(11,5,10,24),color:COLORS[0],desc:'HR & Asset Management for Government',created:D(10,30,9,0),updated:D(11,5,10,24)}),
+  mkProject({id:'p-asq',name:'Asset Sentinel QA',sub:'AI Testing Platform',type:'Platform',status:'warn',issues:2,lastRun:D(11,4,20,17),color:COLORS[1],desc:'AI-driven testing platform for web and API quality',stack:['Next.js','FastAPI','Playwright','Docker'],created:D(10,12,11,0),updated:D(11,4,20,17)}),
+  mkProject({id:'p-crm',name:'Govpravah CRM',sub:'CRM & Operations OS',type:'Web App',status:'pass',lastRun:D(11,3,18,2),color:COLORS[2],desc:'CRM and operations workspace for citizen services',stack:['React','NestJS','PostgreSQL','Redis'],created:D(10,20,14,0),updated:D(11,3,18,2)}),
+  mkProject({name:'Inventory Pro',sub:'Stock & procurement',status:'pass',lastRun:D(11,2,16,40),created:D(10,5,10,0)}),
+  mkProject({name:'Helpdesk Desk',sub:'Tickets & support',status:'pass',lastRun:D(11,1,12,10),created:D(10,3,10,0)}),
+  mkProject({name:'Asset Tracker',sub:'Asset lifecycle',status:'pass',lastRun:D(10,31,17,5),created:D(9,28,10,0)}),
+  mkProject({name:'Project Hub',sub:'Tasks & sprints',status:'pass',lastRun:D(10,29,11,45),created:D(9,22,10,0)}),
+  mkProject({name:'Vendor Portal',type:'Full Stack',sub:'Vendor onboarding',status:'pass',lastRun:D(10,27,15,30),created:D(9,15,10,0)}),
+  mkProject({name:'Leave Manager',sub:'Leave & attendance',status:'pass',lastRun:D(10,25,10,15),created:D(9,10,10,0)}),
+  mkProject({name:'Billing Console',type:'API',sub:'Invoices & payments',status:'none',created:D(9,1,10,0)}),
+  mkProject({name:'Audit Logger',type:'API',sub:'Compliance audit trail',status:'none',created:D(8,25,10,0)}),
+  mkProject({name:'Policy Wiki',sub:'Internal knowledge base',status:'none',created:D(8,18,10,0)})
+];
+S.projects.forEach(p=>{if(p.type==='API')p.stack=['NestJS','PostgreSQL','Docker'];});
+S.depProject=S.secProject='p-gov';
+function slugOf(name){const s=name.toLowerCase().replace(/[^a-z0-9 ]/g,'').split(' ')[0]||'app';let u=s,i=1;while(S.projects.some(p=>p.slug===u))u=s+(++i);return u;}
+function urlFor(stage,slug){const pre=stage==='PROD'?'':stage.toLowerCase()+'.';return 'https://'+pre+slug+'.in';}
+function addEnv(p,stage,status,last){const slug=p.slug||(p.slug=slugOf(p.name));const e={id:uid('e'),pid:p.id,stage:stage,url:urlFor(stage,slug),status:status,last:last||null};S.envs.push(e);return e;}
+S.projects.slice(0,8).forEach(p=>{p.slug=p.id==='p-gov'?'govrakshak':(p.id==='p-asq'?'assetsentinel':p.id==='p-crm'?'govpravah':slugOf(p.name));addEnv(p,'DEV','Running',p.lastRun);if(p.id==='p-gov'){addEnv(p,'STAGE','Running',D(11,4,15,12));addEnv(p,'PROD','Stopped',null);}});
+S.activity=[
+  {text:'Build completed for GovRakshak HRMS',type:'ok',at:D(11,5,10,24)},
+  {text:'QA tests executed (148 tests) – 0 failed',type:'flask',at:D(11,5,10,21)},
+  {text:'Deployed to DEV environment',type:'cloud',at:D(11,5,10,26)}
+];
+S.agents=[
+  {id:'a1',kind:'builder',name:'App Builder Agent',desc:'Generate complete applications from requirements',icon:'code'},
+  {id:'a2',kind:'qa',name:'QA Agent',desc:'Create and run test cases, analyze failures',icon:'flask'},
+  {id:'a3',kind:'security',name:'Security Agent',desc:'Scan for vulnerabilities and suggest fixes',icon:'shield'},
+  {id:'a4',kind:'devops',name:'DevOps Agent',desc:'Create CI/CD, Docker, and deployment configurations',icon:'cloud'}
+];
+S.integ=[
+  {id:'github',name:'GitHub',logo:'GH',color:'#111',on:true,at:D(10,30,9,5)},
+  {id:'aws',name:'AWS',logo:'aws',color:'#ff9900',on:true,at:D(10,30,9,12)},
+  {id:'docker',name:'Docker',logo:'dkr',color:'#1d63ed',on:true,at:D(10,30,9,20)},
+  {id:'jenkins',name:'Jenkins',logo:'Jk',color:'#d33833',on:false},
+  {id:'slack',name:'Slack',logo:'#',color:'#4a154b',on:false},
+  {id:'jira',name:'Jira',logo:'Ji',color:'#0052cc',on:false}
+];
+S.keys=[{id:'k1',name:'Default key',key:'as_live_7f3a9c21d84e5b60a1c7e92d4f08b3a6',at:D(10,30,9,30)}];
+S.team=[
+  {id:'t1',name:'Kapil Chavan',email:'kapil.chavan@assetsentinel.ai',role:'Owner',status:'Active'},
+  {id:'t2',name:'Aarav Patil',email:'aarav.patil@assetsentinel.ai',role:'Developer',status:'Active'},
+  {id:'t3',name:'Neha Kulkarni',email:'neha.kulkarni@assetsentinel.ai',role:'QA Engineer',status:'Active'}
+];
+const byId=id=>S.projects.find(p=>p.id===id);
+const pname=id=>{const p=byId(id);return p?p.name:'Deleted project';};
+function log(text,type){S.activity.unshift({text:text,type:type||'ok',at:new Date()});S.unread=true;}
+function usageUI(){const pct=Math.round(S.tokens/S.tokenCap*100);$('#usageNums').textContent=(S.tokens/1e6).toFixed(1).replace(/\.0$/,'')+'M / '+(S.tokenCap/1e6)+'M tokens';$('#usagePct').textContent=pct+'%';$('#usageFill').style.width=pct+'%';$('#usageBar').setAttribute('aria-valuenow',pct);}
+function addTokens(n){S.tokens=Math.min(S.tokenCap,S.tokens+n);usageUI();}
+function userUI(){$('#uAv').textContent=initials(S.user.name);$('#uName').textContent=S.user.name;$('#uRole').textContent=S.user.role;}
+
+/* ========== scaffold / code ========== */
+function modelFor(n){if(/hrms|hr /i.test(n))return['Employee','LeaveRequest'];if(/crm/i.test(n))return['Lead','Deal'];if(/inventory/i.test(n))return['Item','StockMovement'];if(/helpdesk/i.test(n))return['Ticket','Comment'];return['Record','Activity'];}
+function scaffold(p){
+  const M=modelFor(p.name);const f={};const T=p.type;const title=p.name;
+  if(T!=='API'&&T!=='Mobile'){
+    f['frontend/src/App.tsx']="import React from 'react';\nimport { BrowserRouter, Routes, Route } from 'react-router-dom';\nimport Dashboard from './pages/Dashboard';\nimport Login from './pages/Login';\n\nfunction App() {\n  return (\n    <BrowserRouter>\n      <Routes>\n        <Route path=\"/\" element={<Dashboard />} />\n        <Route path=\"/login\" element={<Login />} />\n      </Routes>\n    </BrowserRouter>\n  );\n}\n\nexport default App;\n";
+    f['frontend/src/pages/Login.tsx']="import React, { useState } from 'react';\n\nexport default function Login() {\n  const [email, setEmail] = useState('');\n  const [password, setPassword] = useState('');\n\n  async function submit(e: React.FormEvent) {\n    e.preventDefault();\n    const res = await fetch('/api/auth/login', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({ email, password }),\n    });\n    if (res.ok) window.location.href = '/';\n  }\n\n  return (\n    <form onSubmit={submit}>\n      <h1>Sign in to "+title+"</h1>\n      <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder=\"Email\" />\n      <input type=\"password\" value={password} onChange={(e) => setPassword(e.target.value)} placeholder=\"Password\" />\n      <button type=\"submit\">Sign in</button>\n    </form>\n  );\n}\n";
+    f['frontend/src/pages/Dashboard.tsx']="import React, { useEffect, useState } from 'react';\n\ntype Row = { id: string; name: string };\n\nexport default function Dashboard() {\n  const [rows, setRows] = useState<Row[]>([]);\n\n  useEffect(() => {\n    fetch('/api/"+M[0].toLowerCase()+"s').then((r) => r.json()).then(setRows);\n  }, []);\n\n  return (\n    <main>\n      <h1>"+title+"</h1>\n      <ul>\n        {rows.map((r) => (\n          <li key={r.id}>{r.name}</li>\n        ))}\n      </ul>\n    </main>\n  );\n}\n";
+  }
+  if(T==='Mobile'){
+    f['mobile/App.tsx']="import React from 'react';\nimport { NavigationContainer } from '@react-navigation/native';\nimport { createNativeStackNavigator } from '@react-navigation/native-stack';\nimport Home from './screens/Home';\n\nconst Stack = createNativeStackNavigator();\n\nexport default function App() {\n  return (\n    <NavigationContainer>\n      <Stack.Navigator>\n        <Stack.Screen name=\"Home\" component={Home} />\n      </Stack.Navigator>\n    </NavigationContainer>\n  );\n}\n";
+    f['mobile/screens/Home.tsx']="import React from 'react';\nimport { View, Text } from 'react-native';\n\nexport default function Home() {\n  return (\n    <View style={{ padding: 24 }}>\n      <Text style={{ fontSize: 22 }}>"+title+"</Text>\n    </View>\n  );\n}\n";
+  }
+  f['backend/src/main.ts']="import { NestFactory } from '@nestjs/core';\nimport { AppModule } from './app.module';\n\nasync function bootstrap() {\n  const app = await NestFactory.create(AppModule);\n  app.enableCors();\n  await app.listen(process.env.PORT || 3000);\n}\nbootstrap();\n";
+  f['backend/src/app.module.ts']="import { Module } from '@nestjs/common';\nimport { "+M[0]+"Module } from './"+M[0].toLowerCase()+"/"+M[0].toLowerCase()+".module';\nimport { AuthModule } from './auth/auth.module';\n\n@Module({\n  imports: [AuthModule, "+M[0]+"Module],\n})\nexport class AppModule {}\n";
+  f['backend/prisma/schema.prisma']="datasource db {\n  provider = \"postgresql\"\n  url      = env(\"DATABASE_URL\")\n}\n\ngenerator client {\n  provider = \"prisma-client-js\"\n}\n\nmodel User {\n  id        String   @id @default(uuid())\n  email     String   @unique\n  password  String\n  createdAt DateTime @default(now())\n}\n\nmodel "+M[0]+" {\n  id        String   @id @default(uuid())\n  name      String\n  createdAt DateTime @default(now())\n  "+M[1].charAt(0).toLowerCase()+M[1].slice(1)+"s "+M[1]+"[]\n}\n\nmodel "+M[1]+" {\n  id        String   @id @default(uuid())\n  "+M[0].toLowerCase()+"Id String\n  "+M[0].toLowerCase()+"   "+M[0]+" @relation(fields: ["+M[0].toLowerCase()+"Id], references: [id])\n  note      String?\n}\n";
+  f['Dockerfile']="FROM node:20-alpine AS build\nWORKDIR /app\nCOPY backend/package*.json ./\nRUN npm ci\nCOPY backend/ .\nRUN npm run build\n\nFROM node:20-alpine\nWORKDIR /app\nCOPY --from=build /app/dist ./dist\nCOPY --from=build /app/node_modules ./node_modules\nEXPOSE 3000\nCMD [\"node\", \"dist/main.js\"]\n";
+  f['docker-compose.yml']="services:\n  api:\n    build: .\n    ports:\n      - \"3000:3000\"\n    environment:\n      DATABASE_URL: postgresql://app:app@db:5432/app\n    depends_on:\n      - db\n  db:\n    image: postgres:16\n    environment:\n      POSTGRES_USER: app\n      POSTGRES_PASSWORD: app\n      POSTGRES_DB: app\n";
+  return f;
+}
+function files(p){if(!p.files){p.files=scaffold(p);p.saved=Object.assign({},p.files);}return p.files;}
+function tree(paths){const root={};paths.slice().sort().forEach(path=>{let n=root;const parts=path.split('/');parts.forEach((seg,i)=>{if(i===parts.length-1)n[seg]=null;else{n[seg]=n[seg]||{};n=n[seg];}});});return root;}
+function treeHTML(node,prefix,depth){
+  return Object.keys(node).sort((a,b)=>{const da=node[a]!==null,db=node[b]!==null;return da===db?a.localeCompare(b):(da?-1:1);}).map(k=>{
+    const full=prefix+k;const sp='padding-left:'+(8+depth*14)+'px';
+    if(node[k]===null)return '<button class="tr'+(S.ed.active===full?' on':'')+'" style="'+sp+'" data-a="openFile:'+esc(full.replace(/\//g,'|'))+'">'+ic('file')+esc(k)+'</button>';
+    const closed=S.ed.closed[full];
+    return '<button class="tr" style="'+sp+'" data-a="toggleDir:'+esc(full.replace(/\//g,'|'))+'">'+ic(closed?'right':'chev')+ic('folder')+esc(k)+'</button>'+(closed?'':treeHTML(node[k],full+'/',depth+1));
+  }).join('');
+}
+function aiSnippet(pr,path){
+  const l=pr.toLowerCase();
+  if(!/\.(tsx?|jsx?)$/.test(path))return '\n# AI Assist: '+pr+'\n# Suggested change added below. Review before deploying.\n';
+  if(/valid|form|input/.test(l))return '\n// AI Assist: '+pr+'\nexport function validateEmail(value: string): boolean {\n  return /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value);\n}\n';
+  if(/api|fetch|request/.test(l))return '\n// AI Assist: '+pr+'\nexport async function apiGet<T>(path: string): Promise<T> {\n  const res = await fetch(path, { headers: { Accept: \'application/json\' } });\n  if (!res.ok) throw new Error(\'Request failed: \' + res.status);\n  return res.json() as Promise<T>;\n}\n';
+  if(/test/.test(l))return '\n// AI Assist: '+pr+'\ndescribe(\'smoke\', () => {\n  it(\'renders without crashing\', () => {\n    expect(true).toBe(true);\n  });\n});\n';
+  return '\n// AI Assist: '+pr+'\nexport function aiGenerated() {\n  // TODO: implement the requested change\n}\n';
+}
+
+/* ========== tests / scans ========== */
+const SUITES={
+  functional:{name:'Functional Test',tool:'Playwright',icon:'shield',color:'#4ade80',names:['Login & Authentication','User Management','Core Workflows','Reports & Exports']},
+  api:{name:'API Test',tool:'Postman / Newman',icon:'server',color:'#fb923c',names:['Auth endpoints','CRUD endpoints','Validation & errors','Contract checks']},
+  automation:{name:'Automation',tool:'Test Suite',icon:'gear',color:'#60a5fa',names:['Smoke suite','Navigation','Forms','Accessibility']},
+  regression:{name:'Regression Test',tool:'Playwright',icon:'check-c',color:'#a78bfa',names:['Critical paths','Previously failed','UI snapshots','Permissions']},
+  performance:{name:'Performance',tool:'k6',icon:'chart',color:'#f472b6',names:['Load 50 VUs','Stress 200 VUs','Spike test','Soak test']},
+  history:{name:'Test Reports & History',tool:'All runs',icon:'file',color:'#c4b5fd',names:[]}
+};
+const HR_NAMES=['Login & Authentication','Employee Management','Leave Management'];
+const CASE_POOL=['loads without errors','validates required fields','handles invalid input','persists changes','returns expected status','respects permissions','shows empty state','recovers after failure','paginates results','exports data'];
+const ERRS=['Expected status 200 but received 500','Timeout 30000ms exceeded waiting for selector ".submit-btn"','AssertionError: expected 3 to equal 4','TypeError: Cannot read properties of undefined (reading \'id\')'];
+let runSeq=1248;
+function buildRun(p,suite,o){
+  o=o||{};const su=SUITES[suite];
+  const names=(suite==='functional'&&/hrms/i.test(p.name))?HR_NAMES:su.names;
+  const total=o.total||rnd(120,170);const failedN=o.failed!=null?o.failed:(p.issues?rnd(1,3):(Math.random()<.2?1:0));
+  const base=Math.floor(total/names.length);const suites=[],cases=[];let left=failedN;let dur=0;
+  names.forEach((n,i)=>{
+    const cntN=i===names.length-1?total-base*(names.length-1):base;
+    const fcount=left>0&&(i===names.length-1||Math.random()<.5)?Math.min(left,cntN):0;left-=fcount;
+    const secs=o.suiteDurs?o.suiteDurs[i]:Math.round(cntN*(.8+Math.random()*.8));dur+=secs;
+    suites.push({name:n,count:cntN,failed:fcount,dur:secs,res:fcount?'Failed':'Passed'});
+    const shown=Math.min(cntN,10);
+    for(let c=0;c<shown;c++){const bad=c<fcount;cases.push({suite:n,name:n+': '+CASE_POOL[c%CASE_POOL.length],res:bad?'Failed':'Passed',dur:(Math.random()*2+.2).toFixed(1)+'s',err:bad?pick(ERRS):''});}
+  });
+  if(o.dur)dur=o.dur;
+  const at=o.at||new Date();const id=++runSeq;
+  const lines=['['+fmtT(at)+'] Starting '+su.name+' ('+su.tool+') for '+p.name,'['+fmtT(at)+'] Environment: DEV','['+fmtT(at)+'] Discovered '+total+' tests in '+names.length+' suites'];
+  suites.forEach(s=>{lines.push('  '+(s.failed?'✗':'✓')+' '+s.name+' — '+s.count+' tests, '+s.failed+' failed ('+fmtDur(s.dur)+')');});
+  cases.filter(c=>c.res==='Failed').forEach(c=>lines.push('    FAIL '+c.name+'\n      '+c.err));
+  lines.push('['+fmtT(at)+'] Finished: '+(total-failedN)+' passed, '+failedN+' failed, 0 skipped in '+fmtDur(dur));
+  return {id:id,suite:suite,pid:p.id,status:failedN?'fail':'pass',total:total,passed:total-failedN,failed:failedN,skipped:0,dur:dur,at:at,suites:suites,cases:cases,logs:lines};
+}
+function applyRun(r){
+  const p=byId(r.pid);S.runs.unshift(r);
+  if(p){p.status=r.failed?'warn':'pass';p.issues=r.failed;p.lastRun=r.at;p.updated=r.at;}
+  S.stats.tests+=r.total;S.stats.passed+=r.passed;S.stats.bugs+=r.failed;S.trend[6]+=r.total;
+  log('QA tests executed ('+r.total+' tests) – '+r.failed+' failed','flask');
+}
+(function seedRuns(){
+  const g=byId('p-gov');const r=buildRun(g,'functional',{total:148,failed:0,dur:324,at:D(11,5,10,24),suiteDurs:[42,70,58]});r.id=1248;runSeq=1248;S.runs.push(r);
+})();
+const SEV_ORDER=['Critical','High','Medium','Low'];
+const SEV_POOLS={
+  Critical:[['Hardcoded secret in config','backend/.env.example','Move secrets to a vault and rotate exposed keys'],['SQL injection in raw query','backend/src/reports','Use parameterised queries through the ORM']],
+  High:[['Outdated dependency (zod)','package.json','Upgrade zod to the latest patched version'],['Broken access control on /api/admin','backend/src/admin','Enforce role checks with a guard on every admin route'],['Unvalidated redirect','frontend/src/auth','Allow-list redirect targets'],['JWT without expiry','backend/src/auth','Set short expiry and add refresh tokens']],
+  Medium:[['Missing security headers','nginx.conf','Add CSP, X-Frame-Options and HSTS headers'],['Insecure file upload','src/uploads','Validate MIME type and size, and store files outside the web root'],['Weak password policy','backend/src/auth','Require 10+ characters and check against breached lists'],['CORS wildcard origin','backend/src/main.ts','Restrict CORS to known origins'],['No rate limiting on login','backend/src/auth','Add throttling to authentication routes'],['Session fixation risk','backend/src/auth','Regenerate the session ID after login']],
+  Low:[['Verbose error messages','backend/src/main.ts','Return generic errors in production'],['Cookie without Secure flag','backend/src/auth','Set Secure and HttpOnly on session cookies'],['Server version disclosed','nginx.conf','Hide the server version header'],['Missing Referrer-Policy','nginx.conf','Add Referrer-Policy: strict-origin'],['Autocomplete on password field','frontend/src/pages/Login.tsx','Use autocomplete="current-password"'],['Directory listing enabled','nginx.conf','Disable autoindex'],['Deprecated TLS ciphers','nginx.conf','Disable TLS 1.0/1.1 and weak ciphers'],['Source maps exposed in production','frontend/build','Do not serve source maps publicly']]
+};
+function makeScan(c,h,m,l,at){
+  const v=[];[['Critical',c],['High',h],['Medium',m],['Low',l]].forEach(x=>{const pool=SEV_POOLS[x[0]];for(let i=0;i<x[1];i++){const e=pool[i%pool.length];v.push({id:uid('v'),name:e[0]+(i>=pool.length?' (#'+(Math.floor(i/pool.length)+1)+')':''),sev:x[0],loc:e[1],fix:e[2],fixed:false});}});
+  return {at:at||new Date(),vulns:v};
+}
+S.scans['p-gov']=makeScan(0,2,5,8,D(11,5,10,30));
+const openV=sc=>sc?sc.vulns.filter(v=>!v.fixed):[];
+const cnt=(sc,s)=>openV(sc).filter(v=>v.sev===s).length;
+const bySev=(a,b)=>SEV_ORDER.indexOf(a.sev)-SEV_ORDER.indexOf(b.sev);
+
+/* ========== charts ========== */
+function lineChart(vals,labels,o){
+  o=o||{};const W=560,H=220,L=46,R=14,T=12,B=28;const max=o.max||1000,step=o.step||250;
+  const x=i=>L+i*((W-L-R)/Math.max(1,vals.length-1));const y=v=>T+(H-T-B)*(1-v/max);
+  let s='<defs><linearGradient id="cf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8b3dff" stop-opacity=".6"/><stop offset="1" stop-color="#8b3dff" stop-opacity=".05"/></linearGradient></defs>';
+  for(let g=0;g<=max;g+=step){s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(g)+'" y2="'+y(g)+'" stroke="#1f2750"/><text x="'+(L-8)+'" y="'+(y(g)+4)+'" fill="#9aa3c7" font-size="11" text-anchor="end">'+num(g)+'</text>';}
+  const pts=vals.map((v,i)=>x(i)+','+y(v)).join(' ');
+  s+='<polygon points="'+x(0)+','+y(0)+' '+pts+' '+x(vals.length-1)+','+y(0)+'" fill="url(#cf)"/><polyline points="'+pts+'" stroke="#a78bfa" stroke-width="2" fill="none" stroke-linejoin="round"/>';
+  const every=Math.ceil(vals.length/8);
+  vals.forEach((v,i)=>{if(vals.length<=12)s+='<circle cx="'+x(i)+'" cy="'+y(v)+'" r="3.5" fill="#6ea8ff" stroke="#0d1230" stroke-width="1.5"><title>'+esc(labels[i])+': '+num(Math.round(v))+(o.unit||'')+'</title></circle>';if(i%every===0||i===vals.length-1)s+='<text x="'+x(i)+'" y="'+(H-8)+'" fill="#9aa3c7" font-size="11" text-anchor="middle">'+esc(labels[i])+'</text>';});
+  return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+esc(o.label||'Chart')+'">'+s+'</svg>';
+}
+
+/* ========== shared view bits ========== */
+const badge=p=>p.status==='pass'?'<span class="status pass">'+ic('check')+'Passed</span>':p.status==='warn'?'<span class="status warn">⚠ '+p.issues+' Issue'+(p.issues===1?'':'s')+'</span>':p.status==='run'?'<span class="status run">Running…</span>':p.status==='fail'?'<span class="status fail">Failed</span>':'<span class="status none">Not run</span>';
+const typeIcon={'Web App':'monitor','API':'server','Mobile':'phone','Full Stack':'layers','Platform':'layers'};
+function projRow(p){
+  return '<tr><td><button class="proj" data-a="openProject:'+p.id+'"><span class="pi" style="background:'+p.color[0]+';color:'+p.color[1]+'">'+ic(p.type==='API'?'server':'building')+'</span><span><b>'+esc(p.name)+'</b><small>'+esc(p.sub||p.desc||p.type)+'</small></span></button></td>'+
+  '<td><span class="pill">'+esc(p.type)+'</span></td><td style="font-size:13px;color:#cfd5ff;white-space:nowrap">'+(p.lastRun?fmt(p.lastRun):'–')+'</td><td>'+badge(p)+'</td>'+
+  '<td><div class="acts"><button class="run-btn" data-a="quickRun:'+p.id+'" aria-label="Run tests for '+esc(p.name)+'">'+ic('play')+'</button><button class="more" data-a="projMenu:'+p.id+'" aria-label="More actions for '+esc(p.name)+'">'+ic('dots')+'</button></div></td></tr>';
+}
+const projTable=rows=>'<div class="tw"><table><thead><tr><th>Project</th><th>Type</th><th>Last Run</th><th>Status</th><th>Actions</th></tr></thead><tbody id="ptbody">'+rows.map(projRow).join('')+'</tbody></table></div><p class="empty" id="pempty"'+(rows.length?' style="display:none"':'')+'>No projects match. Clear the filter or build a new app.</p>';
+const actIcon={ok:['var(--green)','#04210f','check'],flask:['#241e5c','#b69bff','flask'],cloud:['#13307a','#6cb6ff','cloud'],shield:['#3a1d5c','#d8b4fe','shield'],bolt:['#3a2a10','#fbbf24','bolt']};
+const actHTML=a=>{const c=actIcon[a.type]||actIcon.ok;return '<div class="act"><span class="ai" style="background:'+c[0]+';color:'+c[1]+'">'+ic(c[2])+'</span><span>'+esc(a.text)+'</span><time>'+fmtT(a.at)+'</time></div>';};
+const projectSelect=(id,sel)=>'<select class="fi" id="'+id+'">'+S.projects.map(p=>'<option value="'+p.id+'"'+(p.id===sel?' selected':'')+'>'+esc(p.name)+'</option>').join('')+'</select>';
+function notFound(){return '<div class="panel"><p class="empty">That page no longer exists.</p><div style="text-align:center"><button class="btn primary sm" data-a="go:dashboard">Back to dashboard</button></div></div>';}
+
+/* ========== views ========== */
+const V={},P={};
+function stats(){
+  const crit=Object.keys(S.scans).reduce((a,k)=>a+cnt(S.scans[k],'Critical'),0);
+  const dep=new Set(S.envs.filter(e=>e.status==='Running').map(e=>e.pid)).size;
+  return {projects:S.projects.length,tests:S.stats.tests,bugs:S.stats.bugs,crit:crit,dep:dep,pass:(S.stats.passed/S.stats.tests*100).toFixed(1)};
+}
+V.dashboard=()=>{
+  const st=stats();
+  const rows=S.projects.filter(p=>p.lastRun).sort((a,b)=>b.lastRun-a.lastRun).slice(0,3);
+  return '<section class="hero" aria-labelledby="heroTitle"><div><h1 id="heroTitle">Build, Test, Secure and Deploy Applications <em>with AI</em></h1><p>Turn your idea into a production-ready application, automatically generate code, run tests, scan for security issues, and deploy.</p><div class="cta"><button class="btn primary" data-a="go:build">'+ic('plus')+'Build New App</button><button class="btn ghost" data-a="go:build:tpl">'+ic('layers')+'Use a Template</button></div></div>'+
+  '<div class="robot" aria-hidden="true"><svg viewBox="0 0 320 260"><defs><linearGradient id="scr" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3a3aa8"/><stop offset="1" stop-color="#1b1b6a"/></linearGradient><radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#a855f7" stop-opacity=".7"/><stop offset="1" stop-color="#a855f7" stop-opacity="0"/></radialGradient></defs><ellipse cx="170" cy="225" rx="130" ry="22" fill="url(#glow)"/><rect x="14" y="28" width="110" height="82" rx="8" fill="url(#scr)" stroke="#6b6bff" stroke-width="1.5"/><path d="M52 56l-14 14 14 14M86 56l14 14-14 14M72 52l-8 36" stroke="#4cc9ff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/><rect x="118" y="198" width="92" height="12" rx="4" fill="#e8eaff"/><path d="M126 198l10-44h66l8 44z" fill="#1a1f58" stroke="#6b6bff" stroke-width="1.5"/><path d="M169 165l-15 7v10c0 6 6 10 15 12 9-2 15-6 15-12v-10l-15-7z" fill="none" stroke="#4cc9ff" stroke-width="3"/><rect x="196" y="38" width="84" height="76" rx="30" fill="#f3f4ff"/><rect x="204" y="48" width="68" height="46" rx="20" fill="#0a0d2e"/><path d="M218 74a6 6 0 0112 0M244 74a6 6 0 0112 0" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" fill="none"/><rect x="188" y="62" width="10" height="26" rx="5" fill="#4cc9ff"/><rect x="278" y="62" width="10" height="26" rx="5" fill="#4cc9ff"/><rect x="206" y="112" width="64" height="62" rx="24" fill="#f3f4ff"/><path d="M238 128l-14 6v10c0 6 6 10 14 12 8-2 14-6 14-12v-10l-14-6z" fill="#2a2f8f"/><path d="M233 143l4 4 7-8" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M206 126c-22 4-30-2-44-10" stroke="#f3f4ff" stroke-width="12" stroke-linecap="round" fill="none"/></svg></div>'+
+  '<div class="checks"><div><span class="ok">'+ic('check')+'</span>Generate Code with AI</div><div><span class="ok">'+ic('check')+'</span>Auto QA Testing</div><div><span class="ok">'+ic('check')+'</span>Security Scanning</div><div><span class="ok">'+ic('check')+'</span>One-Click Deploy</div></div></section>'+
+  '<section class="stats" aria-label="Summary">'+
+  '<button class="stat" data-a="go:projects"><span class="ic" style="background:#16306b;color:#5fb3ff">'+ic('code')+'</span><div><b>'+st.projects+'</b><span>Total Projects</span></div></button>'+
+  '<button class="stat" data-a="go:qa:history"><span class="ic" style="background:#103d2c;color:#4ade80">'+ic('check')+'</span><div><b>'+num(st.tests)+'</b><span>Tests Executed</span></div></button>'+
+  '<button class="stat" data-a="go:qa:history"><span class="ic" style="background:#4a1620;color:#fb7185">'+ic('bug')+'</span><div><b>'+st.bugs+'</b><span>Bugs Found</span></div></button>'+
+  '<button class="stat" data-a="go:security"><span class="ic" style="background:#2a2060;color:#b69bff">'+ic('shield')+'</span><div><b>'+st.crit+'</b><span>Critical Issues</span></div></button>'+
+  '<button class="stat" data-a="go:environments"><span class="ic" style="background:#1e2a6b;color:#7aa2ff">'+ic('rocket')+'</span><div><b>'+st.dep+'</b><span>Deployed Apps</span></div></button></section>'+
+  '<div class="grid g2"><section class="panel" aria-labelledby="pjT"><h2 id="pjT">'+ic('layers')+'My Projects<button class="lnk" data-a="go:projects">View All '+ic('arrow')+'</button></h2>'+projTable(rows)+'</section>'+
+  '<section class="panel" aria-labelledby="qsT"><h2 id="qsT">'+ic('rocket')+'Quick Start</h2><div class="quick">'+
+  '<button data-a="go:build"><span class="qi">'+ic('code')+'</span><span><b>Build an Application</b><small>Describe your idea and generate a full app</small></span><span class="go">'+ic('right')+'</span></button>'+
+  '<button data-a="runQA"><span class="qi">'+ic('flask')+'</span><span><b>Run Tests</b><small>Functional, API, Automation &amp; Performance</small></span><span class="go">'+ic('right')+'</span></button>'+
+  '<button data-a="go:security"><span class="qi">'+ic('shield')+'</span><span><b>Security Scan</b><small>Find vulnerabilities and get remediation</small></span><span class="go">'+ic('right')+'</span></button>'+
+  '<button data-a="go:deploy"><span class="qi">'+ic('cloud')+'</span><span><b>Deploy Application</b><small>Deploy to DEV, STAGE or PROD with one click</small></span><span class="go">'+ic('right')+'</span></button></div></section></div>'+
+  '<div class="grid g3"><section class="panel" aria-labelledby="raT"><h2 id="raT">'+ic('pulse')+'Recent Activity<button class="lnk" data-a="viewLogs">View Logs '+ic('arrow')+'</button></h2><div class="activity">'+S.activity.slice(0,3).map(actHTML).join('')+'</div></section>'+
+  '<section class="panel" aria-labelledby="ttT"><h2 id="ttT">'+ic('chart')+'Test Trends <small style="color:var(--muted);font-weight:400;font-size:13px">(Last 7 Days)</small></h2><div class="trend-wrap"><div class="chart">'+lineChart(S.trend,['Oct 30','Oct 31','Nov 1','Nov 2','Nov 3','Nov 4','Nov 5'],{max:Math.max(1000,Math.ceil(Math.max.apply(null,S.trend)/500)*500),step:Math.max(1000,Math.ceil(Math.max.apply(null,S.trend)/500)*500)/4,label:'Tests per day'})+'</div><div class="mini"><div><span style="color:var(--violet-2)">'+ic('code')+'</span><span><b>'+num(st.tests)+'</b><span>Total Tests</span></span></div><div><span class="ok">'+ic('check')+'</span><span><b>'+st.pass+'%</b><span>Pass Rate</span></span></div></div></div></section></div>';
+};
+
+/* Build */
+const TEMPLATES=[
+  {n:'HRMS',d:'Employee, leave, attendance',cats:['HR','Business'],icon:'users',p:'Create an HRMS web application with employee management, leave, and attendance.',t:'Web App'},
+  {n:'CRM',d:'Leads, deals, customers',cats:['Business'],icon:'chart',p:'Create a CRM web application to track leads, deals, and customers with a sales pipeline.',t:'Web App'},
+  {n:'Project Management',d:'Tasks, sprints, team',cats:['Productivity','Business'],icon:'layers',p:'Create a project management app with tasks, sprints, boards, and team collaboration.',t:'Full Stack'},
+  {n:'Asset Management',d:'Track and manage assets',cats:['Operations'],icon:'building',p:'Create an asset management app to track assets, assignments, maintenance, and audits.',t:'Web App'},
+  {n:'Helpdesk',d:'Tickets and support',cats:['Operations','Business'],icon:'help',p:'Create a helpdesk app with ticket creation, assignment, SLA tracking, and a knowledge base.',t:'Web App'},
+  {n:'Inventory',d:'Stock and procurement',cats:['Operations'],icon:'brief',p:'Create an inventory app with stock levels, purchase orders, suppliers, and low-stock alerts.',t:'API'}
+];
+V.build=()=>'<div class="page-h"><div class="grow"><h1>Build Application with AI</h1><p>Describe your idea and generate a full application.</p></div></div>'+
+  '<section class="panel"><div class="fl"><label for="bPrompt">What do you want to build?</label><textarea id="bPrompt" class="fi" placeholder="Create an HRMS web application with employee management, leave, and attendance.">'+esc(S.draft)+'</textarea></div>'+
+  '<div class="fl"><label for="bName">Project name (optional)</label><input id="bName" class="fi" placeholder="e.g. GovRakshak HRMS"></div>'+
+  '<div class="fl"><label>App type</label><div class="seg" id="typeSeg" role="group" aria-label="App type">'+['Web App','API','Mobile','Full Stack'].map(t=>'<button data-a="setType:'+t.replace(' ','_')+'" class="'+(S.buildType===t?'on':'')+'">'+ic(typeIcon[t])+t+'</button>').join('')+'</div></div>'+
+  '<button class="btn primary" data-a="generate">'+ic('bolt')+'Generate App</button></section>'+
+  '<h2 class="sec" id="tplHead">Choose a template</h2><div class="chips" id="tplChips" style="margin-bottom:12px">'+['All','Business','Productivity','HR','Operations'].map((c,i)=>'<button class="pill" data-a="tplFilter:'+c+'" style="'+(i===0?'background:var(--violet);border-color:var(--violet)':'')+'">'+c+'</button>').join('')+'</div>'+
+  '<div class="cards" id="tplGrid">'+TEMPLATES.map((t,i)=>'<button class="tile" data-cat="'+t.cats.join(',')+'" data-a="useTemplate:'+i+'"><span style="color:var(--violet-2)">'+ic(t.icon)+'</span><b>'+t.n+'</b><small>'+t.d+'</small></button>').join('')+'</div>';
+P.build=r=>{const ta=$('#bPrompt');ta.addEventListener('input',()=>{S.draft=ta.value;});if(r.a==='tpl'){const h=$('#tplHead');if(h)h.scrollIntoView({behavior:'smooth'});}};
+
+/* Projects */
+function filteredProjects(){const q=S.projFilter.trim().toLowerCase();return S.projects.filter(p=>(!q||(p.name+p.sub+p.type).toLowerCase().includes(q))&&(!S.projStatus||p.status===S.projStatus));}
+V.projects=()=>'<div class="page-h"><div class="grow"><h1>My Projects</h1><p>'+S.projects.length+' projects across web apps, APIs and platforms.</p></div><button class="btn primary sm" data-a="go:build">'+ic('plus')+'Build New App</button></div>'+
+  '<div class="toolbar"><input id="pf" class="fi" placeholder="Filter projects by name or type" value="'+esc(S.projFilter)+'" aria-label="Filter projects"><select id="ps" class="fi auto" aria-label="Filter by status"><option value="">All statuses</option><option value="pass">Passed</option><option value="warn">Has issues</option><option value="none">Not run</option></select></div>'+
+  '<section class="panel">'+projTable(filteredProjects())+'</section>';
+P.projects=()=>{const f=$('#pf'),s=$('#ps');s.value=S.projStatus;const upd=()=>{S.projFilter=f.value;S.projStatus=s.value;const rows=filteredProjects();$('#ptbody').innerHTML=rows.map(projRow).join('');$('#pempty').style.display=rows.length?'none':'block';};f.addEventListener('input',upd);s.addEventListener('change',upd);};
+
+/* Project detail */
+function projHead(p,tab){
+  const tabs=[['overview','Overview'],['code','Code'],['tests','Tests'],['security','Security'],['deploy','Deploy'],['settings','Settings']];
+  return '<div class="crumb"><button data-a="go:projects">Projects</button>/<span>'+esc(p.name)+'</span></div>'+
+  '<div class="page-h"><span class="proj"><span class="pi" style="background:'+p.color[0]+';color:'+p.color[1]+';width:52px;height:52px">'+ic('building')+'</span></span><div class="grow"><h1>'+esc(p.name)+'</h1><div class="chips" style="margin-top:6px"><span class="pill">'+esc(p.type)+'</span><span class="pill" style="color:#60a5fa;border-color:#1d4ed8">DEV</span></div></div>'+
+  '<button class="btn ghost sm" data-a="editProject:'+p.id+'">'+ic('edit')+'Edit</button><button class="btn ghost sm" data-a="cloneProject:'+p.id+'">'+ic('copy')+'Clone</button><button class="more" data-a="projMenu:'+p.id+'" aria-label="More">'+ic('dots')+'</button></div>'+
+  '<div class="tabs" role="tablist">'+tabs.map(t=>'<button role="tab" class="'+(tab===t[0]?'on':'')+'" data-a="projTab:'+p.id+':'+t[0]+'">'+t[1]+'</button>').join('')+'</div>';
+}
+const TAB={};
+TAB.overview=p=>'<section class="panel"><dl class="dl"><dt>Description</dt><dd>'+esc(p.desc||p.sub||'No description yet')+'</dd><dt>Status</dt><dd><span class="status run">'+esc(p.state)+'</span> '+badge(p)+'</dd><dt>Created</dt><dd>'+fmt(p.created)+'</dd><dt>Last Updated</dt><dd>'+fmt(p.updated)+'</dd><dt>Tech Stack</dt><dd><div class="chips">'+p.stack.map(s=>'<span class="tech">'+esc(s)+'</span>').join('')+'</div></dd></dl></section>';
+TAB.code=p=>{
+  const f=files(p);if(S.ed.pid!==p.id){S.ed={pid:p.id,open:[],active:null,closed:{}};const first=Object.keys(f).find(k=>/App\.tsx$/.test(k))||Object.keys(f)[0];S.ed.pid=p.id;S.ed.open=[first];S.ed.active=first;}
+  const ed=S.ed;
+  return '<div class="ide"><aside class="explorer"><h4>Explorer<button data-a="newFile">+ New file</button></h4>'+treeHTML(tree(Object.keys(f)),'',0)+'</aside><section class="editor"><div class="etabs">'+
+  ed.open.map(path=>{const dirty=p.files[path]!==p.saved[path];return '<span class="etab'+(path===ed.active?' on':'')+'"><button data-a="openFile:'+esc(path.replace(/\//g,'|'))+'">'+esc(path.split('/').pop())+'</button>'+(dirty?'<i title="Unsaved"></i>':'')+'<button class="x" data-a="closeFile:'+esc(path.replace(/\//g,'|'))+'" aria-label="Close tab">'+ic('x')+'</button></span>';}).join('')+
+  '</div><div class="ebar"><span>'+esc(p.name)+'/'+esc(ed.active||'')+'</span><button class="btn ghost sm" data-a="aiAssist">'+ic('sparkle')+'AI Assist</button><button class="btn primary sm" data-a="saveFile">Save</button></div>'+
+  '<div class="ebody"><pre class="gut" id="gut" aria-hidden="true"></pre><textarea id="code" spellcheck="false" wrap="off" aria-label="Code editor"'+(ed.active?'':' disabled')+'></textarea></div></section></div>';
+};
+TAB.tests=p=>{const rs=S.runs.filter(r=>r.pid===p.id);return '<section class="panel"><h2>'+ic('flask')+'Test runs<button class="btn primary sm" style="margin-left:auto" data-a="quickRun:'+p.id+'">'+ic('play')+'Run tests</button></h2>'+(rs.length?runTable(rs):'<p class="empty">No test runs yet. Run the functional suite to see results here.</p>')+'</section>';};
+TAB.security=p=>{const sc=S.scans[p.id];return '<section class="panel"><h2>'+ic('shield')+'Security<button class="btn primary sm" style="margin-left:auto" data-a="scanProject:'+p.id+'">Run scan</button></h2>'+(sc?'<div class="grid g4"><div class="kpi badc"><b>'+cnt(sc,'Critical')+'</b><span>Critical</span></div><div class="kpi warnc"><b>'+cnt(sc,'High')+'</b><span>High</span></div><div class="kpi warnc"><b>'+cnt(sc,'Medium')+'</b><span>Medium</span></div><div class="kpi infoc"><b>'+cnt(sc,'Low')+'</b><span>Low</span></div></div><p style="margin-top:12px;color:var(--muted)">Last scan '+fmt(sc.at)+'. <button style="color:var(--violet-2)" data-a="openSecurity:'+p.id+'">View findings and fixes</button></p>':'<p class="empty">This project has not been scanned yet.</p>')+'</section>';};
+TAB.deploy=p=>{const es=S.envs.filter(e=>e.pid===p.id);return '<section class="panel"><h2>'+ic('cloud')+'Deployments<button class="btn primary sm" style="margin-left:auto" data-a="openDeploy:'+p.id+'">Deploy</button></h2>'+(es.length?'<div class="tw"><table><thead><tr><th>Environment</th><th>URL</th><th>Status</th><th>Last Deploy</th></tr></thead><tbody>'+es.map(e=>'<tr><td><b>'+esc(e.stage)+'</b></td><td>'+esc(e.url)+'</td><td>'+envChip(e.status)+'</td><td>'+fmt(e.last)+'</td></tr>').join('')+'</tbody></table></div>':'<p class="empty">Not deployed to any environment yet.</p>')+'</section>';};
+TAB.settings=p=>'<section class="panel"><div class="fl"><label for="sName">Project name</label><input id="sName" class="fi" value="'+esc(p.name)+'"></div><div class="fl"><label for="sDesc">Description</label><textarea id="sDesc" class="fi">'+esc(p.desc)+'</textarea></div><div class="fl"><label for="sState">Status</label><select id="sState" class="fi">'+['Planning','In Progress','In Review','Live'].map(s=>'<option'+(s===p.state?' selected':'')+'>'+s+'</option>').join('')+'</select></div><div class="cta"><button class="btn primary sm" data-a="saveProjSettings:'+p.id+'">Save changes</button><button class="btn danger sm" data-a="deleteProject:'+p.id+'">'+ic('trash')+'Delete project</button></div></section>';
+V.project=r=>{const p=byId(r.id);if(!p)return notFound();const tab=r.tab||'overview';return projHead(p,tab)+TAB[tab](p);};
+P.project=r=>{
+  if((r.tab||'overview')!=='code')return;
+  const p=byId(r.id),ta=$('#code'),gut=$('#gut');if(!p||!ta)return;
+  const lines=()=>{const n=ta.value.split('\n').length;gut.textContent=Array.from({length:n},(_,i)=>i+1).join('\n');};
+  ta.value=S.ed.active?(p.files[S.ed.active]||''):'';lines();
+  function refreshTabs(){$$('.etab').forEach((t,i)=>{const path=S.ed.open[i];const dirty=p.files[path]!==p.saved[path];const d=$('i',t);if(dirty&&!d){const el=document.createElement('i');el.title='Unsaved';t.insertBefore(el,$('.x',t));}else if(!dirty&&d)d.remove();});}
+  ta.addEventListener('input',()=>{if(!S.ed.active)return;p.files[S.ed.active]=ta.value;lines();refreshTabs();});
+  ta.addEventListener('scroll',()=>{gut.scrollTop=ta.scrollTop;});
+  ta.addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();const s=ta.selectionStart;ta.value=ta.value.slice(0,s)+'  '+ta.value.slice(ta.selectionEnd);ta.selectionStart=ta.selectionEnd=s+2;ta.dispatchEvent(new Event('input'));}if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();A.saveFile();}});
+};
+
+/* Agents */
+V.agents=()=>'<div class="page-h"><div class="grow"><h1>AI Agents</h1><p>Specialized AI agents to build, test, secure and improve apps.</p></div><button class="btn primary sm" data-a="createAgent">'+ic('plus')+'Create Agent</button></div><section class="panel">'+S.agents.map(a=>'<button class="agent" data-a="runAgent:'+a.id+'"><span class="ai">'+ic(a.icon||'cpu')+'</span><span><b>'+esc(a.name)+'</b><small>'+esc(a.desc)+'</small></span><span class="go">'+ic('right')+'</span></button>').join('')+'</section>';
+
+/* QA */
+function runTable(rs){return '<div class="tw"><table><thead><tr><th>Run</th><th>Suite</th><th class="hide-m">Project</th><th>Result</th><th class="hide-m">Duration</th><th>When</th></tr></thead><tbody>'+rs.map(r=>'<tr><td><button class="proj" data-a="openRun:'+r.id+'"><b style="color:var(--violet-2)">#'+r.id+'</b></button></td><td>'+esc(SUITES[r.suite].name)+'</td><td class="hide-m">'+esc(pname(r.pid))+'</td><td>'+(r.failed?'<span class="status fail">'+r.failed+' failed</span>':'<span class="status pass">'+ic('check')+'Passed</span>')+'</td><td class="hide-m">'+fmtDur(r.dur)+'</td><td style="white-space:nowrap;font-size:13px">'+fmt(r.at)+'</td></tr>').join('')+'</tbody></table></div>';}
+V.qa=()=>'<div class="page-h"><div class="grow"><h1>Testing (QA)</h1><p>Run functional, API, and automation tests.</p></div><button class="btn primary sm" data-a="runQA">'+ic('play')+'Run Test</button></div>'+
+  '<div class="cards c3">'+['functional','api','automation','regression','performance','history'].map(k=>{const s=SUITES[k];return '<button class="tile'+(S.qaSuite===k?' on':'')+'" data-a="selectSuite:'+k+'"><span style="color:'+s.color+'">'+ic(s.icon)+'</span><b>'+s.name+'</b><small>'+s.tool+'</small></button>';}).join('')+'</div>'+
+  '<h2 class="sec">'+(S.qaSuite==='history'?'All test runs':SUITES[S.qaSuite].name+' runs')+'</h2><section class="panel">'+(function(){const rs=S.runs.filter(r=>S.qaSuite==='history'||r.suite===S.qaSuite);return rs.length?runTable(rs):'<p class="empty">No '+SUITES[S.qaSuite].name.toLowerCase()+' runs yet. Press Run Test to start one.</p>';})()+'</section>';
+V.run=r=>{
+  const x=S.runs.find(q=>q.id===+r.id);if(!x)return notFound();const tab=r.tab||'summary';
+  const tabs=[['summary','Summary'],['cases','Test Cases'],['logs','Logs'],['artifacts','Artifacts']];
+  let body='';
+  if(tab==='summary')body='<div class="tw"><table><thead><tr><th>Test Suite</th><th>Tests</th><th>Result</th><th>Duration</th></tr></thead><tbody>'+x.suites.map(s=>'<tr><td>'+esc(s.name)+'</td><td>'+s.count+'</td><td>'+(s.failed?'<span class="status fail">Failed ('+s.failed+')</span>':'<span class="status pass">Passed</span>')+'</td><td>'+fmtDur(s.dur)+'</td></tr>').join('')+'</tbody></table></div>';
+  if(tab==='cases')body='<div class="chips" style="margin-bottom:10px">'+['all','Passed','Failed'].map(f=>'<button class="pill" data-a="caseFilter:'+f+'">'+(f==='all'?'All':f)+'</button>').join('')+'</div><div class="tw"><table><thead><tr><th>Test case</th><th>Result</th><th>Time</th></tr></thead><tbody>'+x.cases.map(c=>'<tr data-res="'+c.res+'"><td>'+esc(c.name)+(c.err?'<br><small style="color:#fca5a5">'+esc(c.err)+'</small>':'')+'</td><td>'+(c.res==='Passed'?'<span class="status pass">Passed</span>':'<span class="status fail">Failed</span>')+'</td><td>'+c.dur+'</td></tr>').join('')+'</tbody></table></div><p class="empty">Showing a sample of '+x.cases.length+' of '+x.total+' tests.</p>';
+  if(tab==='logs')body='<pre class="log">'+esc(x.logs.join('\n'))+'</pre>';
+  if(tab==='artifacts')body='<div class="menu-list">'+['report.txt','junit.xml'].map(n=>'<button data-a="dlArtifact:'+x.id+':'+n+'">'+ic('download')+esc(n)+'<span style="margin-left:auto;color:var(--muted)">Download</span></button>').join('')+'</div>';
+  return '<div class="crumb"><button data-a="go:qa">Testing (QA)</button>/<span>Test Run #'+x.id+'</span></div><div class="page-h"><div class="grow"><h1>Test Run #'+x.id+' '+(x.failed?'<span class="status fail" style="vertical-align:middle">Failed</span>':'<span class="status pass" style="vertical-align:middle">Passed</span>')+'</h1><p>'+esc(SUITES[x.suite].name)+' · '+esc(pname(x.pid))+' · Executed on '+fmt(x.at)+' · Duration: '+fmtDur(x.dur)+'</p></div><button class="btn ghost sm" data-a="rerun:'+x.id+'">'+ic('refresh')+'Re-run</button></div>'+
+  '<div class="grid g4" style="margin-bottom:14px"><div class="kpi infoc"><b>'+x.total+'</b><span>Total Tests</span></div><div class="kpi okc"><b>'+x.passed+'</b><span>Passed</span></div><div class="kpi badc"><b>'+x.failed+'</b><span>Failed</span></div><div class="kpi"><b>'+x.skipped+'</b><span>Skipped</span></div></div>'+
+  '<div class="tabs" role="tablist">'+tabs.map(t=>'<button role="tab" class="'+(tab===t[0]?'on':'')+'" data-a="runTab:'+x.id+':'+t[0]+'">'+t[1]+'</button>').join('')+'</div><section class="panel">'+body+'</section>';
+};
+
+/* Security */
+V.security=()=>{
+  const p=byId(S.secProject)||S.projects[0];if(!p)return notFound();const sc=S.scans[p.id];const tab=S.secTab;
+  let body;
+  if(!sc)body='<p class="empty">No scan results for this project yet. Press Run Scan to check it for vulnerabilities.</p>';
+  else if(tab==='vulns'){const sorted=sc.vulns.slice().sort(bySev);body='<div class="tw"><table><thead><tr><th>#</th><th>Vulnerability</th><th>Severity</th><th>Location</th><th>Status</th></tr></thead><tbody>'+sorted.map((v,i)=>'<tr><td>'+(i+1)+'</td><td>'+esc(v.name)+'</td><td><span class="sev '+v.sev+'">'+v.sev+'</span></td><td style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px">'+esc(v.loc)+'</td><td>'+(v.fixed?'<span class="chip ok2">Fixed</span>':'<span class="chip mut">Open</span>')+'</td></tr>').join('')+'</tbody></table></div>'+(sorted.length?'':'<p class="empty">No vulnerabilities found.</p>');}
+  else{const op=openV(sc).sort(bySev);body=op.length?'<div style="margin-bottom:10px"><button class="btn primary sm" data-a="applyAll">'+ic('check')+'Apply all fixes</button></div>'+op.map(v=>'<div class="rec"><span class="sev '+v.sev+'">'+v.sev+'</span><div><b>'+esc(v.name)+'</b><small>'+esc(v.fix)+'</small></div><button class="btn ghost sm" data-a="applyFix:'+v.id+'">Apply fix</button></div>').join(''):'<p class="empty">All findings are fixed. Run a new scan to confirm.</p>';}
+  return '<div class="page-h"><div class="grow"><h1>Security Scan</h1><p>Scan your application for vulnerabilities.</p></div><button class="btn primary sm" data-a="scanProject:'+p.id+'">'+ic('play')+'Run Scan</button></div>'+
+  '<div class="toolbar"><select class="fi auto" id="secSel" aria-label="Project">'+S.projects.map(q=>'<option value="'+q.id+'"'+(q.id===p.id?' selected':'')+'>'+esc(q.name)+'</option>').join('')+'</select>'+(sc?'<span style="color:var(--muted);align-self:center">Last scan '+fmt(sc.at)+'</span>':'')+'</div>'+
+  '<div class="grid g4" style="margin-bottom:14px"><div class="kpi badc"><b>'+cnt(sc,'Critical')+'</b><span>Critical</span></div><div class="kpi warnc"><b>'+cnt(sc,'High')+'</b><span>High</span></div><div class="kpi warnc"><b>'+cnt(sc,'Medium')+'</b><span>Medium</span></div><div class="kpi infoc"><b>'+cnt(sc,'Low')+'</b><span>Low</span></div></div>'+
+  '<div class="tabs"><button class="'+(tab==='vulns'?'on':'')+'" data-a="secTab:vulns">Vulnerabilities</button><button class="'+(tab==='recs'?'on':'')+'" data-a="secTab:recs">Recommendations</button></div><section class="panel">'+body+'</section>';
+};
+P.security=()=>{$('#secSel').addEventListener('change',e=>{S.secProject=e.target.value;render();});};
+
+/* Deploy */
+const METHODS=['Docker (Recommended)','Kubernetes (OpenShift / EKS)','Serverless (AWS Lambda)','Static hosting (S3 + CloudFront)'];
+const envFor=(pid,stage)=>S.envs.find(e=>e.pid===pid&&e.stage===stage);
+function stageLabel(pid,stage){const e=envFor(pid,stage);return e?e.status:(stage==='PROD'?'Not Deployed':'Ready');}
+V.deploy=()=>{
+  const p=byId(S.depProject)||S.projects[0];if(!p)return notFound();
+  const desc={DEV:'Development',STAGE:'Pre-production',PROD:'Production'};
+  return '<div class="page-h"><div class="grow"><h1>Deploy Application</h1><p>Deploy your application to DEV, STAGE, or PROD.</p></div></div><section class="panel">'+
+  '<div class="fl"><label for="depSel">Project</label><select class="fi" id="depSel">'+S.projects.map(q=>'<option value="'+q.id+'"'+(q.id===p.id?' selected':'')+'>'+esc(q.name)+'</option>').join('')+'</select></div>'+
+  '<div class="cards c3" style="margin-bottom:14px">'+['DEV','STAGE','PROD'].map(st=>{const l=stageLabel(p.id,st);return '<button class="env-card'+(S.depStage===st?' on':'')+'" data-a="depStage:'+st+'"><b>'+st+'</b><small>'+desc[st]+'</small><span class="st '+(l==='Running'||l==='Ready'?'good':l==='Stopped'?'badt':'dim')+'">'+(l==='Ready'?'✓ ':'')+l+'</span></button>';}).join('')+'</div>'+
+  '<div class="fl"><label for="depMethod">Deployment Method</label><select class="fi" id="depMethod">'+METHODS.map(m=>'<option'+(m===S.depMethod?' selected':'')+'>'+m+'</option>').join('')+'</select></div>'+
+  '<button class="btn primary" style="width:100%" data-a="deployNow">'+ic('cloud')+'Deploy Now to '+S.depStage+'</button></section>';
+};
+P.deploy=()=>{$('#depSel').addEventListener('change',e=>{S.depProject=e.target.value;render();});$('#depMethod').addEventListener('change',e=>{S.depMethod=e.target.value;});};
+
+/* Environments */
+const envChip=s=>s==='Running'?'<span class="status pass"><span style="width:7px;height:7px;border-radius:50%;background:#4ade80"></span>Running</span>':s==='Stopped'?'<span class="status fail"><span style="width:7px;height:7px;border-radius:50%;background:#f87171"></span>Stopped</span>':'<span class="status none">'+esc(s)+'</span>';
+V.environments=()=>{
+  const sel=S.envProject||'';const es=S.envs.filter(e=>!sel||e.pid===sel);
+  return '<div class="page-h"><div class="grow"><h1>Environments</h1><p>Manage your deployment environments.</p></div><button class="btn primary sm" data-a="addEnv">'+ic('plus')+'Add Environment</button></div>'+
+  '<div class="toolbar"><select class="fi auto" id="envSel" aria-label="Filter by project"><option value="">All projects</option>'+S.projects.map(q=>'<option value="'+q.id+'"'+(q.id===sel?' selected':'')+'>'+esc(q.name)+'</option>').join('')+'</select></div>'+
+  '<section class="panel"><div class="tw"><table><thead><tr><th>Project</th><th>Environment</th><th class="hide-m">URL</th><th>Status</th><th class="hide-m">Last Deploy</th><th>Actions</th></tr></thead><tbody>'+
+  (es.length?es.map(e=>'<tr><td>'+esc(pname(e.pid))+'</td><td><b>'+esc(e.stage)+'</b></td><td class="hide-m" style="color:#7aa2ff;font-size:13px">'+esc(e.url)+'</td><td>'+envChip(e.status)+'</td><td class="hide-m" style="font-size:13px;white-space:nowrap">'+fmt(e.last)+'</td><td><div class="acts"><button class="btn ghost sm" data-a="envToggle:'+e.id+'">'+(e.status==='Running'?'Stop':'Start')+'</button><button class="more" data-a="envDel:'+e.id+'" aria-label="Delete environment">'+ic('trash')+'</button></div></td></tr>').join(''):'<tr><td colspan="6" class="empty">No environments yet. Add one or deploy an app.</td></tr>')+
+  '</tbody></table></div></section>';
+};
+P.environments=()=>{$('#envSel').addEventListener('change',e=>{S.envProject=e.target.value;render();});};
+
+/* Monitoring */
+function monGen(range){
+  const n={'1h':12,'24h':24,'7d':7}[range];const labels=[],vals=[];const nowD=new Date();
+  for(let i=0;i<n;i++){
+    const d=new Date(nowD);
+    if(range==='1h'){d.setMinutes(d.getMinutes()-(n-1-i)*5);labels.push(pad(d.getHours())+':'+pad(d.getMinutes()));}
+    else if(range==='24h'){d.setHours(d.getHours()-(n-1-i));labels.push(pad(d.getHours())+':00');}
+    else{d.setDate(d.getDate()-(n-1-i));labels.push(d.toLocaleDateString('en-US',{weekday:'short'}));}
+    vals.push(Math.round(190+Math.sin(i/2.1)*38+rnd(-14,14)+(i%5===0?28:0)));
+  }
+  return {range:range,vals:vals,labels:labels,uptime:99.98,resp:vals[n-1],cpu:32,mem:68};
+}
+const monMax=m=>Math.max(400,Math.ceil(Math.max.apply(null,m.vals)/100)*100);
+function monStatsHTML(m){return '<div class="stats" style="grid-template-columns:repeat(4,1fr)">'+
+  '<div class="stat"><span class="ic" style="background:#103d2c;color:#4ade80">'+ic('check')+'</span><div><b>'+m.uptime.toFixed(2)+'%</b><span>Uptime</span></div></div>'+
+  '<div class="stat"><span class="ic" style="background:#1e2a6b;color:#7aa2ff">'+ic('pulse')+'</span><div><b>'+Math.round(m.resp)+' ms</b><span>Response Time</span></div></div>'+
+  '<div class="stat"><span class="ic" style="background:#103d2c;color:#4ade80">'+ic('gauge')+'</span><div><b>'+Math.round(m.cpu)+'%</b><span>CPU</span></div></div>'+
+  '<div class="stat"><span class="ic" style="background:#4a2a10;color:#fdba74">'+ic('server')+'</span><div><b>'+Math.round(m.mem)+'%</b><span>Memory</span></div></div></div>';}
+V.monitoring=()=>{
+  if(!S.mon)S.mon=monGen('24h');const m=S.mon;
+  return '<div class="page-h"><div class="grow"><h1>Monitoring</h1><p>Application and infrastructure health. <span class="mon-live">Live</span></p></div><select class="fi auto" id="monRange" aria-label="Time range"><option value="1h">Last 1 Hour</option><option value="24h">Last 24 Hours</option><option value="7d">Last 7 Days</option></select></div>'+
+  '<div id="monStats">'+monStatsHTML(m)+'</div><section class="panel"><h2>'+ic('pulse')+'Response Time (ms)</h2><div class="chart" id="monChart">'+lineChart(m.vals,m.labels,{max:monMax(m),step:100,unit:' ms',label:'Response time'})+'</div></section>'+
+  '<section class="panel" style="margin-top:12px"><h2>'+ic('server')+'Service health</h2><div class="tw"><table><tbody>'+[['Web frontend','CDN + static hosting'],['API gateway','NestJS · 3 replicas'],['PostgreSQL','Primary + replica'],['Job queue','Redis · 0 pending']].map(s=>'<tr><td><b>'+s[0]+'</b></td><td style="color:var(--muted)">'+s[1]+'</td><td><span class="status pass">'+ic('check')+'Healthy</span></td></tr>').join('')+'</tbody></table></div></section>';
+};
+P.monitoring=()=>{
+  const sel=$('#monRange');sel.value=S.mon.range;
+  sel.addEventListener('change',()=>{S.mon=monGen(sel.value);render();});
+  S.monT=setInterval(()=>{
+    const m=S.mon;if(!m||!$('#monStats')){clearInterval(S.monT);return;}
+    m.cpu=clamp(m.cpu+rnd(-3,3),12,70);m.mem=clamp(m.mem+rnd(-1,1),55,85);m.resp=clamp(m.resp+rnd(-18,18),150,320);m.vals[m.vals.length-1]=m.resp;
+    $('#monStats').innerHTML=monStatsHTML(m);
+    $('#monChart').innerHTML=lineChart(m.vals,m.labels,{max:monMax(m),step:100,unit:' ms',label:'Response time'});
+  },3000);
+};
+
+/* Integrations */
+V.integrations=()=>'<div class="page-h"><div class="grow"><h1>Integrations</h1><p>Connect your tools and services.</p></div></div><div class="cards">'+S.integ.map(i=>'<div class="integ"><span class="lg" style="color:'+i.color+'">'+esc(i.logo)+'</span><b>'+i.name+'</b><button class="cb'+(i.on?' on':'')+'" data-a="integ:'+i.id+'">'+(i.on?'✓ Connected':'Connect')+'</button>'+(i.on&&i.at?'<small style="color:var(--muted)">Since '+esc(i.at.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}))+'</small>':'')+'</div>').join('')+'</div>';
+
+/* Settings */
+V.settings=()=>{
+  const tabs=[['profile','Profile'],['team','Team'],['keys','API Keys'],['billing','Billing'],['prefs','Preferences']];const t=S.settingsTab;let body='';
+  if(t==='profile')body='<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px"><span class="avatar" style="width:64px;height:64px;font-size:22px">'+initials(S.user.name)+'</span><div class="grow"><b style="font-size:19px">'+esc(S.user.name)+'</b><div style="color:var(--muted)">'+esc(S.user.role)+'</div></div><button class="btn ghost sm" data-a="editProfile">'+ic('edit')+'Edit Profile</button></div><dl class="dl"><dt>Full Name</dt><dd>'+esc(S.user.name)+'</dd><dt>Email</dt><dd>'+esc(S.user.email)+'</dd><dt>Role</dt><dd>'+esc(S.user.role)+'</dd><dt>Organization</dt><dd>'+esc(S.user.org)+'</dd></dl>';
+  if(t==='team')body='<div style="margin-bottom:10px"><button class="btn primary sm" data-a="invite">'+ic('plus')+'Invite member</button></div><div class="tw"><table><thead><tr><th>Member</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>'+S.team.map(m=>'<tr><td><b>'+esc(m.name)+'</b><br><small style="color:var(--muted)">'+esc(m.email)+'</small></td><td>'+esc(m.role)+'</td><td>'+(m.status==='Active'?'<span class="chip ok2">Active</span>':'<span class="chip warn2">'+esc(m.status)+'</span>')+'</td><td>'+(m.role==='Owner'?'':'<button class="more" data-a="rmMember:'+m.id+'" aria-label="Remove member">'+ic('trash')+'</button>')+'</td></tr>').join('')+'</tbody></table></div>';
+  if(t==='keys')body='<div style="margin-bottom:10px"><button class="btn primary sm" data-a="genKey">'+ic('plus')+'Generate new key</button></div><div class="tw"><table><thead><tr><th>Name</th><th>Key</th><th class="hide-m">Created</th><th></th></tr></thead><tbody>'+(S.keys.length?S.keys.map(k=>'<tr><td>'+esc(k.name)+'</td><td style="font-family:ui-monospace,Menlo,monospace;font-size:12.5px">'+esc(k.key.slice(0,6))+'••••••••'+esc(k.key.slice(-4))+'</td><td class="hide-m" style="font-size:13px">'+fmt(k.at)+'</td><td><div class="acts"><button class="more" data-a="copyKey:'+k.id+'" aria-label="Copy key">'+ic('copy')+'</button><button class="more" data-a="revokeKey:'+k.id+'" aria-label="Revoke key">'+ic('trash')+'</button></div></td></tr>').join(''):'<tr><td colspan="4" class="empty">No API keys. Generate one to call the platform API.</td></tr>')+'</tbody></table></div>';
+  if(t==='billing'){const pct=Math.round(S.tokens/S.tokenCap*100);body='<div class="grid" style="grid-template-columns:1fr 1fr"><div class="kpi" style="align-items:flex-start;text-align:left;padding:16px"><span>Current plan</span><b>Pro</b><span>5M AI tokens per month</span></div><div class="kpi" style="align-items:flex-start;text-align:left;padding:16px"><span>AI usage this month</span><b>'+(S.tokens/1e6).toFixed(2)+'M / 5M</b><div class="bar" style="width:100%;margin-top:6px"><i style="width:'+pct+'%"></i></div></div></div><h3 style="margin:16px 0 8px">Invoices</h3><div class="tw"><table><tbody>'+[['Oct 2026','₹3,999.00'],['Sep 2026','₹3,999.00'],['Aug 2026','₹3,999.00']].map((r,i)=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td><span class="chip ok2">Paid</span></td><td><button class="btn ghost sm" data-a="invoice:'+i+'">'+ic('download')+'Download</button></td></tr>').join('')+'</tbody></table></div>';}
+  if(t==='prefs')body=[['emailNotif','Email notifications','Get an email when a build, test run or deployment finishes.'],['autoTest','Run tests after every build','Generated apps are tested automatically.'],['autoScan','Scan after every build','Generated apps get a security scan automatically.'],['autoDeploy','Auto-deploy to DEV','Deploy to DEV when tests pass.']].map(r=>'<div class="prefrow"><div><b>'+r[1]+'</b><small>'+r[2]+'</small></div><button class="sw'+(S.prefs[r[0]]?' on':'')+'" role="switch" aria-checked="'+S.prefs[r[0]]+'" aria-label="'+r[1]+'" data-a="togglePref:'+r[0]+'"></button></div>').join('');
+  return '<div class="page-h"><div class="grow"><h1>Settings</h1></div></div><div class="tabs" role="tablist">'+tabs.map(x=>'<button role="tab" class="'+(t===x[0]?'on':'')+'" data-a="setTab:'+x[0]+'">'+x[1]+'</button>').join('')+'</div><section class="panel">'+body+'</section>';
+};
+
+/* ========== render / nav ========== */
+const NAVMAP={dashboard:'dashboard',build:'build',projects:'projects',project:'projects',agents:'agents',qa:'qa',run:'qa',security:'security',deploy:'deploy',environments:'environments',monitoring:'monitoring',integrations:'integrations',settings:'settings'};
+function markNav(){
+  const r=S.route,cur=NAVMAP[r.name];
+  $$('#nav [data-nav]').forEach(b=>b.classList.toggle('active',b.dataset.nav===cur));
+  $('#qaToggle').classList.toggle('active',cur==='qa'||cur==='security');
+  $$('#qaSub [data-sub]').forEach(b=>b.classList.toggle('active',(r.name==='qa'&&b.dataset.sub===S.qaSuite)||(r.name==='security'&&b.dataset.sub==='security')));
+  if(cur==='qa'||cur==='security'){$('#qaSub').classList.add('show');$('#qaToggle').classList.add('open');$('#qaToggle').setAttribute('aria-expanded','true');}
+}
+function render(){
+  clearInterval(S.monT);
+  const r=S.route;const v=V[r.name]||V.dashboard;
+  $('#view').innerHTML=v(r);
+  markNav();if(P[r.name])P[r.name](r);
+  $('#bellDot').style.display=S.unread?'block':'none';
+  usageUI();
+}
+function go(name,params){S.route=Object.assign({name:name},params||{});closeDrawer();hideDrops();render();window.scrollTo(0,0);}
+function closeDrawer(){$('#side').classList.remove('open');$('#scrim').classList.remove('on');}
+function hideDrops(){$$('.drop').forEach(d=>d.classList.remove('on'));}
+
+/* ========== flows ========== */
+function runTests(p,suite){
+  const su=SUITES[suite]||SUITES.functional;
+  progress(su.name+' · '+p.name,['Preparing test environment','Starting '+su.tool,'Running '+su.name.toLowerCase()+' suites','Collecting results and artifacts'],()=>{const r=buildRun(p,suite);applyRun(r);go('run',{id:r.id});toast('Test run #'+r.id+' finished: '+(r.failed?r.failed+' failed':'all passed'));});
+}
+function scanProject(p){
+  progress('Security scan · '+p.name,['Resolving dependencies','Running ZAP baseline scan','Checking configuration and headers','Building remediation report'],()=>{
+    const sc=makeScan(Math.random()<.1?1:0,rnd(0,3),rnd(1,6),rnd(2,8));S.scans[p.id]=sc;p.updated=new Date();
+    log('Security scan completed for '+p.name+' ('+sc.vulns.length+' findings)','shield');
+    S.secProject=p.id;S.secTab='vulns';go('security');toast('Scan finished: '+sc.vulns.length+' findings');
+  });
+}
+function createProject(name,prompt,type){
+  const found=(prompt.match(/\b(hrms|crm|helpdesk|inventory|asset management|project management)\b/i)||[])[1];
+  const nm=name||(found?(found.replace(/\b\w/g,c=>c.toUpperCase())+(/management/i.test(found)?'':' App')):'Untitled App '+(S.projects.length+1));
+  const stack=type==='API'?['NestJS','PostgreSQL','Docker']:type==='Mobile'?['React Native','Expo','NestJS']:type==='Full Stack'?['Next.js','NestJS','PostgreSQL','Docker']:WEB_STACK.slice();
+  const p=mkProject({name:nm,sub:prompt.slice(0,48),desc:prompt,type:type,stack:stack,status:'none',created:new Date(),updated:new Date()});
+  p.slug=slugOf(p.name);S.projects.unshift(p);return p;
+}
+
+/* ========== actions ========== */
+const A={
+  noop(){},closeModal(){closeModal();},
+  go(name,arg){const a=typeof arg==='string'?arg:'';if(name==='qa'&&a)S.qaSuite=a;go(name,a==='tpl'?{a:'tpl'}:{});},
+  openDrawer(){$('#side').classList.add('open');$('#scrim').classList.add('on');},closeDrawer,
+  toggleQA(){const sub=$('#qaSub');const open=!sub.classList.contains('show');sub.classList.toggle('show',open);$('#qaToggle').classList.toggle('open',open);$('#qaToggle').setAttribute('aria-expanded',open);if(open&&S.route.name!=='qa'&&S.route.name!=='security')go('qa');},
+  notif(){const d=$('#notifDrop');const on=!d.classList.contains('on');hideDrops();if(on){S.unread=false;$('#bellDot').style.display='none';d.innerHTML='<h4>Notifications</h4>'+S.activity.slice(0,6).map(a=>'<button data-a="go:dashboard"><span style="color:var(--violet-2)">'+ic((actIcon[a.type]||actIcon.ok)[2])+'</span><span>'+esc(a.text)+'</span><small>'+fmtT(a.at)+'</small></button>').join('');d.classList.add('on');}},
+  userMenu(){const d=$('#userDrop');const on=!d.classList.contains('on');hideDrops();if(on){d.innerHTML='<button data-a="settingsTab:profile">'+ic('user')+'Profile</button><button data-a="settingsTab:prefs">'+ic('sliders')+'Preferences</button><button data-a="signOut">'+ic('logout')+'Sign out</button>';d.classList.add('on');}},
+  settingsTab(t){S.settingsTab=t;go('settings');},
+  signOut(){toast('Signing out…');setTimeout(()=>{window.location.href='asset-sentinel-login.html';},700);},
+  help(){modal('Help & shortcuts','<div class="activity"><div class="act"><span>Focus search</span><time>⌘K / Ctrl+K</time></div><div class="act"><span>Save file in editor</span><time>⌘S / Ctrl+S</time></div><div class="act"><span>Close dialog</span><time>Esc</time></div></div><p style="color:var(--muted);margin-top:12px">Everything here runs in your browser. Data resets when you refresh the page.</p>',[{t:'Got it',k:'primary'}]);},
+  viewLogs(){modal('Activity log','<div class="activity">'+S.activity.map(actHTML).join('')+'</div>',[{t:'Close'}],{wide:true});},
+  setType(t){S.buildType=t.replace('_',' ');$$('#typeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.a==='setType:'+t));},
+  tplFilter(c,el){$$('#tplChips button').forEach(b=>{b.style.background='';b.style.borderColor='';});el.style.background='var(--violet)';el.style.borderColor='var(--violet)';$$('#tplGrid .tile').forEach(t=>t.classList.toggle('hidden',c!=='All'&&t.dataset.cat.split(',').indexOf(c)<0));},
+  useTemplate(i){const t=TEMPLATES[+i];S.draft=t.p;$('#bPrompt').value=t.p;$('#bName').value='';S.buildType=t.t;$$('#typeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.a==='setType:'+t.t.replace(' ','_')));window.scrollTo({top:0,behavior:'smooth'});toast(t.n+' template loaded. Edit it or press Generate App.');},
+  generate(){
+    const pr=$('#bPrompt').value.trim(),nm=$('#bName').value.trim();
+    if(pr.length<12){toast('Describe your app in a sentence or two first.');$('#bPrompt').focus();return;}
+    const steps=['Analyzing requirements','Designing architecture and data model','Generating '+(S.buildType==='API'?'API endpoints':S.buildType==='Mobile'?'mobile screens':'UI and pages'),'Generating backend, database and auth'];
+    if(S.prefs.autoTest)steps.push('Running QA tests');if(S.prefs.autoScan)steps.push('Scanning for vulnerabilities');steps.push('Finalizing project');
+    const type=S.buildType;
+    progress('Generating your app',steps,()=>{
+      const p=createProject(nm,pr,type);addTokens(rnd(18000,42000));files(p);log('Build completed for '+p.name,'ok');
+      if(S.prefs.autoTest){const r=buildRun(p,'functional');applyRun(r);}
+      if(S.prefs.autoScan){S.scans[p.id]=makeScan(0,rnd(0,2),rnd(1,4),rnd(1,6));log('Security scan completed for '+p.name,'shield');}
+      if(S.prefs.autoDeploy){addEnv(p,'DEV','Running',new Date());log('Deployed '+p.name+' to DEV environment','cloud');}
+      S.draft='';S.ed={pid:null,open:[],active:null,closed:{}};go('project',{id:p.id,tab:'code'});toast(p.name+' is ready. Review the generated code.');
+    },620);
+  },
+  openProject(id){go('project',{id:id,tab:'overview'});},
+  projTab(id,tab){go('project',{id:id,tab:tab});},
+  quickRun(id){const p=byId(id);if(p)runTests(p,'functional');},
+  projMenu(id){const p=byId(id);if(!p)return;modal(p.name,'<div class="menu-list"><button data-a="openProject:'+id+'">'+ic('layers')+'Open project</button><button data-a="quickRun:'+id+'">'+ic('play')+'Run tests</button><button data-a="scanProject:'+id+'">'+ic('shield')+'Run security scan</button><button data-a="cloneProject:'+id+'">'+ic('copy')+'Clone</button><button class="dng" data-a="deleteProject:'+id+'">'+ic('trash')+'Delete</button></div>',[]);},
+  editProject(id){const p=byId(id);modal('Edit project','<div class="fl"><label for="eN">Name</label><input id="eN" class="fi" value="'+esc(p.name)+'"></div><div class="fl"><label for="eD">Description</label><textarea id="eD" class="fi">'+esc(p.desc)+'</textarea></div>',[{t:'Cancel'},{t:'Save',k:'primary',f:()=>{const n=$('#eN').value.trim();if(!n){toast('Name is required');return false;}p.name=n;p.desc=$('#eD').value.trim();p.updated=new Date();render();toast('Project updated');}}]);},
+  saveProjSettings(id){const p=byId(id);const n=$('#sName').value.trim();if(!n){toast('Project name is required');return;}p.name=n;p.desc=$('#sDesc').value.trim();p.state=$('#sState').value;p.updated=new Date();render();toast('Changes saved');},
+  cloneProject(id){const p=byId(id);closeModal();const c=mkProject({name:p.name+' (Copy)',sub:p.sub,desc:p.desc,type:p.type,stack:p.stack.slice(),color:p.color,status:'none',created:new Date(),updated:new Date()});c.files=Object.assign({},files(p));c.saved=Object.assign({},c.files);c.slug=slugOf(c.name);S.projects.unshift(c);log('Cloned '+p.name,'ok');go('project',{id:c.id,tab:'overview'});toast('Project cloned');},
+  deleteProject(id){const p=byId(id);modal('Delete project?','<p>This removes <b>'+esc(p.name)+'</b>, its test history and its environments. This cannot be undone.</p>',[{t:'Cancel'},{t:'Delete',k:'danger',f:()=>{S.projects=S.projects.filter(x=>x.id!==id);S.envs=S.envs.filter(e=>e.pid!==id);S.runs=S.runs.filter(r=>r.pid!==id);delete S.scans[id];if(S.depProject===id)S.depProject=(S.projects[0]||{}).id;if(S.secProject===id)S.secProject=(S.projects[0]||{}).id;if(S.envProject===id)S.envProject='';log('Deleted '+p.name,'bolt');go('projects');toast('Project deleted');}}]);},
+  openFile(path){path=path.replace(/\|/g,'/');if(S.ed.open.indexOf(path)<0)S.ed.open.push(path);S.ed.active=path;go('project',{id:S.route.id,tab:'code'});},
+  closeFile(path){path=path.replace(/\|/g,'/');const i=S.ed.open.indexOf(path);S.ed.open.splice(i,1);if(S.ed.active===path)S.ed.active=S.ed.open[Math.max(0,i-1)]||null;go('project',{id:S.route.id,tab:'code'});},
+  toggleDir(path){path=path.replace(/\|/g,'/');S.ed.closed[path]=!S.ed.closed[path];go('project',{id:S.route.id,tab:'code'});},
+  saveFile(){const p=byId(S.route.id);if(!p||!S.ed.active)return;p.saved[S.ed.active]=p.files[S.ed.active];p.updated=new Date();$$('.etab i').forEach(i=>i.remove());toast('Saved '+S.ed.active);},
+  aiAssist(){const p=byId(S.route.id);if(!S.ed.active){toast('Open a file first');return;}modal('AI Assist','<div class="fl"><label for="aiP">What should change in '+esc(S.ed.active.split('/').pop())+'?</label><textarea id="aiP" class="fi" placeholder="e.g. add email validation to the form"></textarea></div>',[{t:'Cancel'},{t:'Generate',k:'primary',f:()=>{const pr=$('#aiP').value.trim();if(pr.length<4){toast('Describe the change first');return false;}const path=S.ed.active;progress('AI Assist',['Reading '+path.split('/').pop(),'Generating suggestion','Applying change'],()=>{p.files[path]+=aiSnippet(pr,path);addTokens(rnd(2000,6000));go('project',{id:p.id,tab:'code'});toast('Suggestion added at the end of the file. Review, then Save.');});}}]);},
+  newFile(){const p=byId(S.route.id);modal('New file','<div class="fl"><label for="nf">File path</label><input id="nf" class="fi" placeholder="frontend/src/components/Header.tsx"></div>',[{t:'Cancel'},{t:'Create',k:'primary',f:()=>{const path=$('#nf').value.trim().replace(/^\/+/,'');if(!/^[\w\-./]+\.\w+$/.test(path)){toast('Enter a path like src/utils/helpers.ts');return false;}if(p.files[path]!==undefined){toast('That file already exists');return false;}p.files[path]='';p.saved[path]='';S.ed.open.push(path);S.ed.active=path;go('project',{id:p.id,tab:'code'});}}]);},
+  selectSuite(k){S.qaSuite=k;render();},
+  runQA(){const sel=(S.qaSuite==='history'?'functional':S.qaSuite);modal('Run test','<div class="fl"><label for="rqS">Suite</label><select id="rqS" class="fi">'+['functional','api','automation','regression','performance'].map(k=>'<option value="'+k+'"'+(k===sel?' selected':'')+'>'+SUITES[k].name+' ('+SUITES[k].tool+')</option>').join('')+'</select></div><div class="fl"><label for="rqP">Project</label>'+projectSelect('rqP',S.depProject)+'</div>',[{t:'Cancel'},{t:'Run',k:'primary',f:()=>{const su=$('#rqS').value,p=byId($('#rqP').value);if(!p)return false;S.qaSuite=su;runTests(p,su);}}]);},
+  rerun(id){const r=S.runs.find(q=>q.id===+id),p=r&&byId(r.pid);if(!p){toast('The project for this run no longer exists');return;}runTests(p,r.suite);},
+  openRun(id){go('run',{id:id,tab:'summary'});},
+  runTab(id,tab){go('run',{id:id,tab:tab});},
+  caseFilter(f){$$('#view tbody tr[data-res]').forEach(tr=>tr.classList.toggle('hidden',f!=='all'&&tr.dataset.res!==f));},
+  dlArtifact(id,name){const r=S.runs.find(q=>q.id===+id);if(!r)return;const txt=name==='junit.xml'?'<testsuite name="'+r.suite+'" tests="'+r.total+'" failures="'+r.failed+'"/>\n':r.logs.join('\n')+'\n';download('run-'+id+'-'+name,txt);},
+  secTab(t){S.secTab=t;render();},
+  scanProject(id){const p=byId(id);if(p)scanProject(p);},
+  openSecurity(id){S.secProject=id;S.secTab='vulns';go('security');},
+  applyFix(id){const sc=S.scans[S.secProject];const v=sc&&sc.vulns.find(x=>x.id===id);if(!v)return;v.fixed=true;log('Applied fix: '+v.name,'shield');addTokens(rnd(800,2500));render();toast('Fix applied: '+v.name);},
+  applyAll(){const sc=S.scans[S.secProject];if(!sc)return;const n=openV(sc).length;sc.vulns.forEach(v=>v.fixed=true);log('Applied '+n+' security fixes to '+pname(S.secProject),'shield');addTokens(rnd(3000,8000));render();toast(n+' fixes applied. Run a new scan to confirm.');},
+  depStage(st){S.depStage=st;render();},
+  openDeploy(id){S.depProject=id;go('deploy');},
+  deployNow(){
+    const p=byId(S.depProject);if(!p)return;const st=S.depStage;
+    const run=()=>{
+      const method=S.depMethod.split(' (')[0];
+      progress('Deploying '+p.name+' to '+st,[method==='Docker'?'Building Docker image':method==='Kubernetes'?'Building container image':method==='Serverless'?'Packaging functions':'Building static assets','Running pre-deploy checks','Pushing artifacts','Rolling out to '+st,'Health check'],()=>{
+        let e=envFor(p.id,st);if(!e)e=addEnv(p,st,'Running',new Date());e.status='Running';e.last=new Date();p.updated=new Date();
+        log('Deployed '+p.name+' to '+st+' environment','cloud');addTokens(rnd(500,1500));render();toast('Deployed to '+st+': '+e.url);
+      });
+    };
+    if(st==='PROD')modal('Deploy to production?','<p>You are about to deploy <b>'+esc(p.name)+'</b> to <b>PROD</b>. Users will see the change right away.</p>',[{t:'Cancel'},{t:'Deploy to PROD',k:'primary',f:()=>{run();}}]);else run();
+  },
+  envToggle(id){const e=S.envs.find(x=>x.id===id);if(!e)return;e.status=e.status==='Running'?'Stopped':'Running';if(e.status==='Running')e.last=new Date();log(pname(e.pid)+' '+e.stage+' '+(e.status==='Running'?'started':'stopped'),'cloud');render();toast(e.stage+' '+(e.status==='Running'?'started':'stopped'));},
+  envDel(id){const e=S.envs.find(x=>x.id===id);modal('Delete environment?','<p>Remove <b>'+esc(e.stage)+'</b> for <b>'+esc(pname(e.pid))+'</b>?</p>',[{t:'Cancel'},{t:'Delete',k:'danger',f:()=>{S.envs=S.envs.filter(x=>x.id!==id);render();toast('Environment deleted');}}]);},
+  addEnv(){modal('Add environment','<div class="fl"><label for="aeP">Project</label>'+projectSelect('aeP',S.envProject||S.depProject)+'</div><div class="fl"><label for="aeN">Environment name</label><input id="aeN" class="fi" placeholder="e.g. QA" maxlength="12"></div>',[{t:'Cancel'},{t:'Add',k:'primary',f:()=>{const p=byId($('#aeP').value),n=$('#aeN').value.trim().toUpperCase();if(!n){toast('Enter an environment name');return false;}if(envFor(p.id,n)){toast(n+' already exists for this project');return false;}addEnv(p,n,'Stopped',null);render();toast(n+' environment added');}}]);},
+  integ(id){const i=S.integ.find(x=>x.id===id);
+    if(i.on)modal(i.name+' is connected','<p>Connected on '+fmt(i.at)+'. Disconnecting stops syncs and notifications from '+esc(i.name)+'.</p>',[{t:'Keep connected'},{t:'Disconnect',k:'danger',f:()=>{i.on=false;i.at=null;render();toast(i.name+' disconnected');}}]);
+    else modal('Connect '+i.name,'<div class="fl"><label for="icT">'+(i.id==='slack'?'Webhook URL':'API token')+'</label><input id="icT" class="fi" type="password" placeholder="Paste your '+(i.id==='slack'?'webhook URL':'token')+'" autocomplete="off"></div><p style="color:var(--muted)">Demo only. Nothing is sent or stored.</p>',[{t:'Cancel'},{t:'Connect',k:'primary',f:()=>{if($('#icT').value.trim().length<6){toast('Enter a valid token');return false;}i.on=true;i.at=new Date();log(i.name+' connected','bolt');render();toast(i.name+' connected');}}]);},
+  setTab(t){S.settingsTab=t;render();},
+  editProfile(){modal('Edit profile','<div class="fl"><label for="pN">Full name</label><input id="pN" class="fi" value="'+esc(S.user.name)+'"></div><div class="fl"><label for="pE">Email</label><input id="pE" class="fi" type="email" value="'+esc(S.user.email)+'"></div><div class="fl"><label for="pR">Role</label><input id="pR" class="fi" value="'+esc(S.user.role)+'"></div><div class="fl"><label for="pO">Organization</label><input id="pO" class="fi" value="'+esc(S.user.org)+'"></div>',[{t:'Cancel'},{t:'Save',k:'primary',f:()=>{const n=$('#pN').value.trim(),e=$('#pE').value.trim();if(!n||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){toast('Enter a name and a valid email');return false;}S.user={name:n,email:e,role:$('#pR').value.trim()||S.user.role,org:$('#pO').value.trim()||S.user.org};userUI();render();toast('Profile updated');}}]);},
+  invite(){modal('Invite member','<div class="fl"><label for="ivE">Email</label><input id="ivE" class="fi" type="email" placeholder="name@company.com"></div><div class="fl"><label for="ivR">Role</label><select id="ivR" class="fi"><option>Developer</option><option>QA Engineer</option><option>Viewer</option><option>Admin</option></select></div>',[{t:'Cancel'},{t:'Send invite',k:'primary',f:()=>{const e=$('#ivE').value.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)){toast('Enter a valid email address');return false;}S.team.push({id:uid('t'),name:e.split('@')[0],email:e,role:$('#ivR').value,status:'Invited'});render();toast('Invite added for '+e);}}]);},
+  rmMember(id){const m=S.team.find(x=>x.id===id);modal('Remove member?','<p>Remove <b>'+esc(m.name)+'</b> from the workspace?</p>',[{t:'Cancel'},{t:'Remove',k:'danger',f:()=>{S.team=S.team.filter(x=>x.id!==id);render();toast('Member removed');}}]);},
+  genKey(){modal('Generate API key','<div class="fl"><label for="kN">Key name</label><input id="kN" class="fi" placeholder="e.g. CI pipeline"></div>',[{t:'Cancel'},{t:'Generate',k:'primary',f:()=>{const n=$('#kN').value.trim();if(!n){toast('Give the key a name');return false;}const k='as_live_'+Array.from({length:32},()=>'0123456789abcdef'[rnd(0,15)]).join('');S.keys.unshift({id:uid('k'),name:n,key:k,at:new Date()});render();modal('Copy your new key','<pre class="log" style="white-space:pre-wrap;word-break:break-all">'+esc(k)+'</pre>',[{t:'Copy key',k:'primary',f:()=>{copy(k);return false;}},{t:'Done'}]);}}]);},
+  copyKey(id){const k=S.keys.find(x=>x.id===id);if(k)copy(k.key);},
+  revokeKey(id){const k=S.keys.find(x=>x.id===id);modal('Revoke key?','<p>Anything using <b>'+esc(k.name)+'</b> will stop working.</p>',[{t:'Cancel'},{t:'Revoke',k:'danger',f:()=>{S.keys=S.keys.filter(x=>x.id!==id);render();toast('Key revoked');}}]);},
+  invoice(i){download('invoice-'+['oct','sep','aug'][+i]+'-2026.txt','Asset Sentinel AI Build Studio\nPro plan invoice\nStatus: Paid\nAmount: INR 3,999.00\n');},
+  togglePref(k){S.prefs[k]=!S.prefs[k];render();toast('Preference saved');},
+  createAgent(){modal('Create agent','<div class="fl"><label for="gN">Agent name</label><input id="gN" class="fi" placeholder="e.g. Release Notes Agent"></div><div class="fl"><label for="gD">What does it do?</label><textarea id="gD" class="fi" placeholder="Summarise merged pull requests into release notes"></textarea></div>',[{t:'Cancel'},{t:'Create agent',k:'primary',f:()=>{const n=$('#gN').value.trim(),d=$('#gD').value.trim();if(!n||d.length<8){toast('Add a name and a short description');return false;}S.agents.push({id:uid('a'),kind:'custom',name:n,desc:d,icon:'cpu'});render();toast(n+' created');}}]);},
+  runAgent(id){
+    const a=S.agents.find(x=>x.id===id);const ph={builder:'Inventory app with suppliers, purchase orders and low-stock alerts',qa:'Generate test cases for the login and leave request flows',security:'Review the authentication module for common vulnerabilities',devops:'Create a CI/CD pipeline that builds, tests and deploys to DEV',custom:'Describe the task for this agent'}[a.kind];
+    modal('Run '+a.name,'<div class="fl"><label for="agT">Task</label><textarea id="agT" class="fi" placeholder="'+esc(ph)+'"></textarea></div><p style="color:var(--muted)">Leave it empty to use the example above.</p>',[{t:'Cancel'},{t:'Run agent',k:'primary',f:()=>{const task=$('#agT').value.trim()||ph;progress(a.name,['Understanding the task','Planning steps','Working','Preparing output'],()=>{addTokens(rnd(6000,18000));agentResult(a,task);},520);}}]);
+  }
+};
+function agentResult(a,task){
+  let body='',btns=[{t:'Close'}];
+  if(a.kind==='builder'){body='<p><b>Plan for:</b> '+esc(task)+'</p><ul style="margin:8px 0 0 18px;line-height:1.7"><li>Data model with users, core records and relations</li><li>REST API with auth, CRUD and validation</li><li>React pages: login, dashboard, list and detail views</li><li>Docker setup and a seed script</li></ul>';btns=[{t:'Close'},{t:'Build this app',k:'primary',f:()=>{S.draft=task;go('build');}}];}
+  else if(a.kind==='qa'){body='<p><b>Test cases for:</b> '+esc(task)+'</p><ul style="margin:8px 0 0 18px;line-height:1.7"><li>Valid credentials sign the user in</li><li>Wrong password shows an inline error</li><li>Locked account is blocked after 5 attempts</li><li>Leave request rejects an end date before the start date</li><li>Manager sees pending requests and can approve or reject</li></ul>';btns=[{t:'Close'},{t:'Run tests',k:'primary',f:()=>{setTimeout(()=>A.runQA(),0);}}];}
+  else if(a.kind==='security'){body='<p><b>Review of:</b> '+esc(task)+'</p><ul style="margin:8px 0 0 18px;line-height:1.7"><li>High: JWTs have no expiry. Set a short lifetime and add refresh tokens.</li><li>Medium: no rate limit on login. Add throttling.</li><li>Low: error messages reveal whether an email exists.</li></ul>';btns=[{t:'Close'},{t:'Open Security Scan',k:'primary',f:()=>{go('security');}}];}
+  else if(a.kind==='devops'){const y='name: ci\non:\n  push:\n    branches: [main]\njobs:\n  build:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - run: npm ci && npm test\n      - run: docker build -t app:${{ github.sha }} .\n';body='<p><b>Pipeline for:</b> '+esc(task)+'</p><pre class="log">'+esc(y)+'</pre>';btns=[{t:'Close'},{t:'Copy YAML',k:'primary',f:()=>{copy(y);return false;}}];}
+  else body='<p><b>Task:</b> '+esc(task)+'</p><p style="margin-top:8px;color:var(--muted)">The agent finished. Connect an integration to let it act on your repositories and environments.</p>';
+  log(a.name+' completed a task','bolt');
+  modal(a.name+' result',body,btns,{wide:true});
+}
+
+/* ========== events ========== */
+document.addEventListener('click',e=>{
+  const el=e.target.closest('[data-a]');
+  if(!el){if(!e.target.closest('.rel,.search'))hideDrops();return;}
+  const parts=el.dataset.a.split(':');const fn=A[parts[0]];
+  if(el.closest('.drop')&&parts[0]!=='notif'&&parts[0]!=='userMenu')hideDrops();
+  if(el.closest('.menu-list')&&el.closest('#modalRoot'))closeModal();
+  if(fn){e.preventDefault();fn.apply(null,parts.slice(1).concat([el]));}
+});
+const q=$('#q'),res=$('#results');
+const PAGES=[['Dashboard','dashboard','home'],['Build App','build','code'],['My Projects','projects','layers'],['AI Agents','agents','cpu'],['Testing (QA)','qa','shield'],['Security Scan','security','shield'],['Deploy','deploy','cloud'],['Environments','environments','server'],['Monitoring','monitoring','chart'],['Integrations','integrations','puzzle'],['Settings','settings','gear']];
+function searchUI(){
+  const v=q.value.trim().toLowerCase();if(!v){res.classList.remove('on');return;}
+  const pg=PAGES.filter(p=>p[0].toLowerCase().includes(v)).slice(0,4);
+  const pj=S.projects.filter(p=>(p.name+' '+p.sub+' '+p.type).toLowerCase().includes(v)).slice(0,6);
+  const rn=/^#?\d{3,}/.test(v)?S.runs.filter(r=>String(r.id).includes(v.replace('#',''))).slice(0,3):[];
+  let h='';
+  if(pj.length)h+='<h4>Projects</h4>'+pj.map(p=>'<button data-a="openProject:'+p.id+'">'+ic('building')+esc(p.name)+'<small>'+esc(p.type)+'</small></button>').join('');
+  if(rn.length)h+='<h4>Test runs</h4>'+rn.map(r=>'<button data-a="openRun:'+r.id+'">'+ic('flask')+'Test Run #'+r.id+'<small>'+esc(pname(r.pid))+'</small></button>').join('');
+  if(pg.length)h+='<h4>Pages</h4>'+pg.map(p=>'<button data-a="go:'+p[1]+'">'+ic(p[2])+p[0]+'</button>').join('');
+  res.innerHTML=h||'<p class="empty">No results for "'+esc(q.value)+'"</p>';res.classList.add('on');
+}
+q.addEventListener('input',searchUI);
+q.addEventListener('keydown',e=>{if(e.key==='Enter'){const b=$('button',res);if(b){b.click();q.value='';q.blur();}}if(e.key==='Escape'){res.classList.remove('on');q.blur();}});
+document.addEventListener('click',e=>{if(!e.target.closest('.search')){res.classList.remove('on');}if(e.target.closest('#results button'))q.value='';});
+document.addEventListener('keydown',e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();q.focus();}
+  if(e.key==='Escape'){const r=$('#modalRoot');if(r.classList.contains('on')&&!r.dataset.lock)closeModal();hideDrops();closeDrawer();}
+});
+
+userUI();render();
+})();
+</script>
+</body>
+</html>
