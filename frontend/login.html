@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sign in · Asset Sentinel AI Build Studio</title>
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#070a1c;
+  --line:#2a3170;
+  --text:#f2f4ff;
+  --muted:#a8b0d8;
+  --violet:#8b3dff;
+  --violet-2:#a855f7;
+  --indigo:#5b4bff;
+  --cyan:#22d3ee;
+  --green:#22c55e;
+  --red:#dc2626;
+  --ink:#10143a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;
+  font-family:"Inter","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;
+  color:var(--text);
+  background:
+    radial-gradient(900px 500px at 75% 10%,#3a1593 0%,transparent 65%),
+    radial-gradient(700px 400px at 10% 100%,#1c1274 0%,transparent 70%),
+    var(--bg);
+  overflow-x:hidden;
+}
+button{font:inherit;color:inherit;cursor:pointer;border:none;background:none}
+svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
+
+.page{
+  min-height:100vh;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(360px,460px) 120px;
+  gap:40px;padding:26px 32px 30px;align-items:center;position:relative;
+}
+/* decorative wave */
+.page::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:140px;pointer-events:none;
+  background:
+    repeating-radial-gradient(ellipse at 20% 140%,transparent 0 14px,rgba(120,90,255,.18) 15px 16px);
+  mask-image:linear-gradient(to top,#000,transparent);
+  -webkit-mask-image:linear-gradient(to top,#000,transparent);
+}
+
+/* Left */
+.left{display:flex;flex-direction:column;gap:20px;align-self:stretch;position:relative;z-index:1}
+.top{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:12px}
+.brand b{display:block;font-size:24px;letter-spacing:-.4px;line-height:1.1}
+.brand b span{color:var(--violet-2)}
+.brand small{font-size:17px;color:#e5e8ff}
+.steps{
+  display:flex;align-items:center;gap:12px;padding:10px 18px;border-radius:99px;
+  border:1px solid #4b3fb0;background:rgba(20,16,70,.55);font-size:14px;
+}
+.steps span{display:flex;align-items:center;gap:7px}
+.steps svg{width:18px;height:18px;color:var(--cyan)}
+.steps .sep{color:#7b83c9}
+.steps .sep svg{width:14px;height:14px;color:#7b83c9}
+
+h1{font-size:clamp(38px,4.6vw,60px);line-height:1.06;letter-spacing:-1.5px;font-style:italic;font-weight:800;margin-top:12px}
+h1 em{
+  display:inline-block;background:linear-gradient(90deg,#22d3ee,#7c8cff,#b07bff);
+  -webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.1em;
+  border-bottom:3px solid #22d3ee;border-radius:2px;
+}
+.lead{font-size:clamp(16px,1.6vw,21px);color:#e0e4ff;max-width:560px;margin-top:-6px}
+
+.stage{display:grid;grid-template-columns:230px 1fr;gap:10px;align-items:center;min-height:300px}
+.checks{display:flex;flex-direction:column;gap:14px;list-style:none}
+.checks li{display:flex;align-items:center;gap:12px;font-size:16.5px}
+.ok{width:28px;height:28px;border-radius:50%;background:rgba(34,197,94,.12);border:2px solid var(--green);display:grid;place-items:center;flex:none}
+.ok svg{width:15px;height:15px;stroke:#4ade80;stroke-width:3}
+.art svg{width:100%;height:auto;max-height:340px;stroke:none;fill:none}
+
+.anything h2{font-size:19px;margin-bottom:10px}
+.tiles{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;max-width:760px}
+.tile{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:14px;
+  background:rgba(14,18,60,.7);border:1px solid #2b3380;font-size:13px;color:#dfe3ff;text-align:center;
+}
+.tile svg{width:26px;height:26px;color:#6aa7ff}
+
+/* Card */
+.card{
+  background:#fff;color:var(--ink);border-radius:28px;padding:34px 38px 30px;position:relative;z-index:1;
+  box-shadow:0 0 0 1px rgba(168,85,247,.5),0 30px 80px -20px rgba(139,61,255,.7);
+}
+.card .logo{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:22px}
+.card .logo b{display:block;font-size:30px;letter-spacing:-.6px;line-height:1.05}
+.card .logo b span{color:#5b2bff}
+.card .logo small{font-size:22px;color:#4b5280}
+.card h2{font-size:34px;letter-spacing:-.8px}
+.card .sub{color:#2b3157;margin:4px 0 20px;font-size:15.5px}
+.field{margin-bottom:14px}
+.input{
+  display:flex;align-items:center;gap:12px;height:54px;padding:0 16px;border-radius:12px;
+  border:1.5px solid #cfd4ea;background:#fff;color:#5c6390;
+}
+.input:focus-within{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,61,255,.18)}
+.input.bad{border-color:var(--red)}
+.input input{flex:1;min-width:0;border:none;outline:none;background:none;font:inherit;font-size:16px;color:var(--ink)}
+.input input::placeholder{color:#5c6390}
+.input .eye{color:#4b5280;display:grid;place-items:center}
+.err{color:var(--red);font-size:13px;margin-top:5px;min-height:0}
+.row{display:flex;align-items:center;justify-content:space-between;margin:4px 0 20px;font-size:15.5px}
+.row label{display:flex;align-items:center;gap:10px;cursor:pointer}
+.row input[type=checkbox]{width:20px;height:20px;accent-color:#5b2bff}
+.row a{color:#4b2bff;font-weight:500;text-decoration:none}
+.row a:hover{text-decoration:underline}
+.signin{
+  width:100%;height:58px;border-radius:12px;color:#fff;font-weight:700;font-size:19px;
+  display:flex;align-items:center;justify-content:center;gap:12px;
+  background:linear-gradient(90deg,#8b3dff 0%,#4f46ff 55%,#0ea5ff 100%);
+  box-shadow:0 12px 26px -12px #5b2bff;
+}
+.signin:hover{filter:brightness(1.08)}
+.signin[disabled]{opacity:.7;cursor:progress}
+.or{display:flex;align-items:center;gap:14px;margin:20px 0 16px;color:#2b3157;font-size:15px}
+.or::before,.or::after{content:"";flex:1;height:1px;background:#d6daee}
+.social{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.social button{
+  height:54px;border-radius:12px;border:1.5px solid #cfd4ea;background:#fff;color:var(--ink);
+  display:flex;align-items:center;justify-content:center;gap:12px;font-size:17px;font-weight:500;
+}
+.social button:hover{border-color:var(--violet);background:#f7f4ff}
+.social svg{width:24px;height:24px;stroke:none}
+.alt{text-align:center;margin-top:22px;font-size:16px}
+.alt a{color:#4b2bff;font-weight:700;margin-left:8px;text-decoration:none;font-size:18px}
+.alt a:hover{text-decoration:underline}
+
+/* Right rail */
+.rail{display:flex;flex-direction:column;gap:14px;position:relative;z-index:1}
+.rail div{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:16px;text-align:center;
+  background:rgba(18,20,70,.7);border:1px solid #3a3a9a;font-size:14px;line-height:1.25;color:#e8ebff;
+}
+.rail svg{width:34px;height:34px;color:#7aa8ff}
+
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#171d49;border:1px solid var(--violet);
+  color:#fff;padding:12px 18px;border-radius:12px;display:none;z-index:30;box-shadow:0 14px 40px -12px #000;
+}
+.toast.show{display:block}
+
+@media (max-width:1280px){
+  .page{grid-template-columns:minmax(0,1fr) 440px}
+  .rail{display:none}
+}
+@media (max-width:960px){
+  .page{grid-template-columns:1fr;gap:24px;padding:20px 16px}
+  .card{order:-1;padding:26px 22px}
+  .stage{grid-template-columns:1fr}
+  .art{display:none}
+  .tiles{grid-template-columns:repeat(3,1fr)}
+  .steps{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5M14 4l-4 16"/></symbol>
+    <symbol id="i-check-c" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6l8-3z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 01-.5-9A6 6 0 0118 10a4 4 0 01-.5 8H7z"/><path d="M12 17v-6M9.5 13.5L12 11l2.5 2.5"/></symbol>
+    <symbol id="i-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-flask" viewBox="0 0 24 24"><path d="M9 3h6M10 3v6l-5 9a2 2 0 002 3h10a2 2 0 002-3l-5-9V3"/><path d="M7.5 15h9"/></symbol>
+    <symbol id="i-chart" viewBox="0 0 24 24"><path d="M5 20V12M10 20V6M15 20v-9M20 20V9M15 5l4-2"/></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="2"/><path d="M11 18.5h2"/></symbol>
+    <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 13l9 5 9-5"/></symbol>
+    <symbol id="i-brief" viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2M3 13h18"/></symbol>
+    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/><circle cx="12" cy="12" r="1.5"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M3 3l18 18M10.6 5.1A9.6 9.6 0 0112 5c6.5 0 10 7 10 7a17 17 0 01-3.2 4M6.5 6.6A17 17 0 002 12s3.5 7 10 7c1.7 0 3.2-.4 4.5-1M9.9 9.9a3 3 0 004.2 4.2"/></symbol>
+    <symbol id="i-login" viewBox="0 0 24 24"><path d="M14 4h5a1 1 0 011 1v14a1 1 0 01-1 1h-5M4 12h11M11 8l4 4-4 4"/></symbol>
+    <linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+  </defs>
+</svg>
+
+<div class="page">
+  <!-- Left: pitch -->
+  <section class="left" aria-label="About Asset Sentinel AI">
+    <div class="top">
+      <div class="brand">
+        <svg viewBox="0 0 40 40" style="width:54px;height:54px;stroke:none;fill:none">
+          <path d="M20 3l15 5v11c0 9-6 15-15 18C11 34 5 28 5 19V8l15-5z" fill="#0b1030" stroke="url(#gl)" stroke-width="2.4"/>
+          <rect x="12" y="20" width="4" height="8" rx="1" fill="#22d3ee"/><rect x="18" y="15" width="4" height="13" rx="1" fill="#6d5dfc"/><rect x="24" y="11" width="4" height="17" rx="1" fill="#a855f7"/>
+        </svg>
+        <div><b>Asset Sentinel <span>AI</span></b><small>Build Studio</small></div>
+      </div>
+      <div class="steps" aria-label="Workflow">
+        <span><svg><use href="#i-code"/></svg>Build</span><span class="sep"><svg><use href="#i-right"/></svg></span>
+        <span><svg><use href="#i-check-c"/></svg>Test</span><span class="sep"><svg><use href="#i-right"/></svg></span>
+        <span><svg><use href="#i-shield"/></svg>Secure</span><span class="sep"><svg><use href="#i-right"/></svg></span>
+        <span><svg><use href="#i-cloud"/></svg>Deploy</span>
+      </div>
+    </div>
+
+    <h1>From Idea to Production <em>with AI</em></h1>
+    <p class="lead">Describe, build, test, secure, and deploy complete applications using AI — in minutes.</p>
+
+    <div class="stage">
+      <ul class="checks">
+        <li><span class="ok"><svg><use href="#i-check"/></svg></span>AI App Generation</li>
+        <li><span class="ok"><svg><use href="#i-check"/></svg></span>Auto Code &amp; UI</li>
+        <li><span class="ok"><svg><use href="#i-check"/></svg></span>Database &amp; APIs</li>
+        <li><span class="ok"><svg><use href="#i-check"/></svg></span>Built-in QA Testing</li>
+        <li><span class="ok"><svg><use href="#i-check"/></svg></span>Security Scanning</li>
+        <li><span class="ok"><svg><use href="#i-check"/></svg></span>One-Click Deploy</li>
+      </ul>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 520 330">
+          <defs>
+            <radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#a855f7" stop-opacity=".75"/><stop offset="1" stop-color="#a855f7" stop-opacity="0"/></radialGradient>
+            <linearGradient id="win" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5b5bff"/><stop offset="1" stop-color="#2a2aa6"/></linearGradient>
+            <linearGradient id="code" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#3f52e8"/><stop offset="1" stop-color="#1e1e7a"/></linearGradient>
+          </defs>
+          <ellipse cx="240" cy="290" rx="210" ry="30" fill="url(#glow)"/>
+          <ellipse cx="240" cy="288" rx="190" ry="20" fill="none" stroke="#7c6bff" stroke-width="3"/>
+          <ellipse cx="240" cy="288" rx="150" ry="14" fill="rgba(60,40,160,.5)"/>
+          <!-- code window -->
+          <rect x="52" y="64" width="130" height="92" rx="9" fill="url(#code)" stroke="#6b7bff" stroke-width="1.5"/>
+          <circle cx="66" cy="76" r="3" fill="#7aa2ff"/><circle cx="77" cy="76" r="3" fill="#7aa2ff"/>
+          <g stroke="#9db4ff" stroke-width="3" stroke-linecap="round" opacity=".85"><path d="M64 96h50M64 108h70M64 120h40M64 132h62"/></g>
+          <!-- browser window -->
+          <rect x="296" y="120" width="186" height="136" rx="10" fill="url(#win)" stroke="#8a8aff" stroke-width="1.5"/>
+          <rect x="296" y="120" width="186" height="20" rx="10" fill="#2e2eaa"/>
+          <circle cx="310" cy="130" r="3" fill="#ff7a8a"/><circle cx="321" cy="130" r="3" fill="#ffd36a"/><circle cx="332" cy="130" r="3" fill="#6af0a0"/>
+          <rect x="312" y="154" width="52" height="46" rx="6" fill="#4338c8"/>
+          <path d="M328 170l-7 7 7 7M348 170l7 7-7 7M340 166l-4 22" stroke="#d6e0ff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <g stroke="#b9c4ff" stroke-width="5" stroke-linecap="round" opacity=".8"><path d="M378 160h84M378 176h84M378 192h60"/></g>
+          <rect x="384" y="212" width="60" height="26" rx="6" fill="#aab4ff" opacity=".85"/><path d="M408 219l12 6-12 6z" fill="#3a3ab0"/>
+          <!-- cloud -->
+          <path d="M392 78a20 20 0 01-2-40 26 26 0 0150 6 17 17 0 01-3 34h-45z" fill="#171b6a" stroke="#22d3ee" stroke-width="4" stroke-linejoin="round"/>
+          <path d="M408 66V50m-8 8l8-8 8 8" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <path d="M120 40C200 10 330 10 392 34" stroke="#6b6bff" stroke-width="1.5" stroke-dasharray="3 5" fill="none"/>
+          <!-- database -->
+          <g stroke="#22d3ee" stroke-width="3" fill="#0f1d6a">
+            <ellipse cx="68" cy="214" rx="30" ry="10"/><path d="M38 214v38c0 6 13 11 30 11s30-5 30-11v-38"/>
+            <path d="M38 228c0 6 13 11 30 11s30-5 30-11M38 242c0 6 13 11 30 11s30-5 30-11" fill="none"/>
+          </g>
+          <!-- shield -->
+          <path d="M92 252l22-9 22 9v18c0 12-9 20-22 24-13-4-22-12-22-24z" fill="#a855f7" opacity=".85" stroke="#e5d4ff" stroke-width="2"/>
+          <path d="M104 268l8 8 14-16" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- laptop -->
+          <path d="M214 252l18-62h96l14 62z" fill="#0f1450" stroke="#7a8aff" stroke-width="2"/>
+          <path d="M270 202l-20 9v13c0 8 8 14 20 17 12-3 20-9 20-17v-13z" fill="none" stroke="#22d3ee" stroke-width="4"/>
+          <path d="M260 224v-8M270 224v-14M280 224v-10" stroke="#22d3ee" stroke-width="4" stroke-linecap="round"/>
+          <rect x="196" y="252" width="160" height="12" rx="5" fill="#e6e9ff"/>
+          <!-- robot -->
+          <g>
+            <rect x="130" y="130" width="116" height="100" rx="42" fill="#f4f5ff"/>
+            <rect x="142" y="144" width="92" height="64" rx="28" fill="#090c2b"/>
+            <path d="M162 176a9 9 0 0118 0M196 176a9 9 0 0118 0" stroke="#22d3ee" stroke-width="6" stroke-linecap="round" fill="none"/>
+            <rect x="116" y="162" width="16" height="36" rx="8" fill="#22d3ee"/><rect x="244" y="162" width="16" height="36" rx="8" fill="#22d3ee"/>
+            <rect x="148" y="224" width="80" height="62" rx="26" fill="#f4f5ff"/>
+            <path d="M188 238l-17 7v12c0 8 7 13 17 16 10-3 17-8 17-16v-12z" fill="#2a2f8f"/>
+            <text x="188" y="262" fill="#fff" font-size="11" font-weight="800" text-anchor="middle" font-family="Inter,Arial,sans-serif">AI</text>
+            <path d="M232 244c24-4 38-20 58-30" stroke="#f4f5ff" stroke-width="15" stroke-linecap="round" fill="none"/>
+            <circle cx="294" cy="212" r="8" fill="#f4f5ff"/>
+          </g>
+          <circle cx="40" cy="190" r="3.5" fill="#22d3ee"/><circle cx="470" cy="100" r="3.5" fill="#a855f7"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="anything">
+      <h2>Build Anything</h2>
+      <div class="tiles">
+        <div class="tile"><svg><use href="#i-monitor"/></svg>Web Apps</div>
+        <div class="tile"><svg><use href="#i-phone"/></svg>Mobile Apps</div>
+        <div class="tile"><svg><use href="#i-layers"/></svg>Internal Tools</div>
+        <div class="tile"><svg><use href="#i-brief"/></svg>Business Apps</div>
+        <div class="tile"><svg><use href="#i-cpu"/></svg>AI Agents</div>
+        <div class="tile"><svg style="color:#a78bfa"><use href="#i-gear"/></svg>Automation</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Center: sign-in card -->
+  <main class="card">
+    <div class="logo">
+      <svg viewBox="0 0 40 40" style="width:56px;height:56px;stroke:none;fill:none">
+        <path d="M20 3l15 5v11c0 9-6 15-15 18C11 34 5 28 5 19V8l15-5z" fill="#fff" stroke="#5b2bff" stroke-width="3"/>
+        <rect x="12" y="20" width="4" height="8" rx="1" fill="#22a6ff"/><rect x="18" y="15" width="4" height="13" rx="1" fill="#5b4bff"/><rect x="24" y="11" width="4" height="17" rx="1" fill="#8b3dff"/>
+      </svg>
+      <div><b>Asset Sentinel <span>AI</span></b><small>Build Studio</small></div>
+    </div>
+
+    <h2>Sign In</h2>
+    <p class="sub">Access your workspace and start building with AI.</p>
+
+    <form id="form" novalidate>
+      <div class="field">
+        <label class="input" id="emailBox"><svg><use href="#i-mail"/></svg>
+          <input type="email" id="email" placeholder="Email address" autocomplete="email" aria-label="Email address" required>
+        </label>
+        <div class="err" id="emailErr" role="alert"></div>
+      </div>
+      <div class="field">
+        <label class="input" id="passBox"><svg><use href="#i-lock"/></svg>
+          <input type="password" id="pass" placeholder="Password" autocomplete="current-password" aria-label="Password" required>
+          <button type="button" class="eye" id="eye" aria-label="Show password"><svg><use href="#i-eye"/></svg></button>
+        </label>
+        <div class="err" id="passErr" role="alert"></div>
+      </div>
+
+      <div class="row">
+        <label><input type="checkbox" id="remember">Remember me</label>
+        <a href="#" data-toast="Password reset link will be sent to your email">Forgot password?</a>
+      </div>
+
+      <button class="signin" type="submit" id="submit"><svg><use href="#i-login"/></svg><span>Sign In</span></button>
+    </form>
+
+    <div class="or">or continue with</div>
+    <div class="social">
+      <button type="button" data-toast="Continuing with Google…">
+        <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.7 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.4 28.7A14.5 14.5 0 019.5 24c0-1.6.3-3.2.8-4.7l-7.8-6.1A24 24 0 000 24c0 3.9.9 7.5 2.6 10.8l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.7-4.1-13.6-9.8l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Google
+      </button>
+      <button type="button" data-toast="Continuing with GitHub…">
+        <svg viewBox="0 0 24 24" fill="#10143a"><path d="M12 .5a11.5 11.5 0 00-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.7 1.3 3.4 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 015.8 0c2.2-1.5 3.2-1.2 3.2-1.2.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0012 .5z"/></svg>GitHub
+      </button>
+    </div>
+
+    <p class="alt">Don't have an account?<a href="#" data-toast="Sign up opens here">Sign Up</a></p>
+  </main>
+
+  <!-- Right rail -->
+  <aside class="rail" aria-label="Platform capabilities">
+    <div><svg><use href="#i-code"/></svg>Build<br>with AI</div>
+    <div><svg><use href="#i-flask"/></svg>Test<br>Automatically</div>
+    <div><svg><use href="#i-shield"/></svg>Secure<br>Your App</div>
+    <div><svg><use href="#i-cloud"/></svg>Deploy<br>Anywhere</div>
+    <div><svg><use href="#i-chart"/></svg>Monitor<br>&amp; Improve</div>
+  </aside>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  const $ = id => document.getElementById(id);
+  const toast = $('toast'); let tt;
+  function showToast(m){ toast.textContent = m; toast.classList.add('show'); clearTimeout(tt); tt = setTimeout(()=>toast.classList.remove('show'), 2400); }
+
+  document.addEventListener('click', e=>{
+    const t = e.target.closest('[data-toast]');
+    if(t){ e.preventDefault(); showToast(t.dataset.toast); }
+  });
+
+  // Show / hide password
+  $('eye').addEventListener('click', ()=>{
+    const show = $('pass').type === 'password';
+    $('pass').type = show ? 'text' : 'password';
+    $('eye').setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+    $('eye').innerHTML = '<svg><use href="#'+(show?'i-eye-off':'i-eye')+'"/></svg>';
+  });
+
+  // Validation
+  const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  function setErr(box, errEl, msg){ box.classList.toggle('bad', !!msg); errEl.textContent = msg || ''; }
+  $('email').addEventListener('input', ()=>setErr($('emailBox'), $('emailErr'), ''));
+  $('pass').addEventListener('input', ()=>setErr($('passBox'), $('passErr'), ''));
+
+  // Real FastAPI authentication. API must return { access_token: "..." }.
+  $('form').addEventListener('submit', async e=>{
+    e.preventDefault();
+    const email = $('email').value.trim(), pass = $('pass').value;
+    let ok = true;
+    if(!emailRe.test(email)){ setErr($('emailBox'), $('emailErr'), 'Enter a valid email address, like name@company.com.'); ok = false; }
+    if(pass.length < 8){ setErr($('passBox'), $('passErr'), 'Password must be at least 8 characters.'); ok = false; }
+    if(!ok) return;
+
+    const btn = $('submit');
+    const label = btn.querySelector('span');
+    btn.disabled = true;
+    label.textContent = 'Signing in…';
+
+    try {
+      const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email, password: pass })
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const detail = data.detail;
+        throw new Error(typeof detail === 'string' ? detail : 'Invalid email or password.');
+      }
+      if (!data.access_token) {
+        throw new Error('Login API response is missing access_token.');
+      }
+
+      // "Remember me" controls token persistence.
+      sessionStorage.removeItem('asset_sentinel_token');
+      localStorage.removeItem('asset_sentinel_token');
+      const storage = $('remember').checked ? localStorage : sessionStorage;
+      storage.setItem('asset_sentinel_token', data.access_token);
+
+      showToast('Signed in. Opening your dashboard…');
+      window.setTimeout(() => window.location.replace('/'), 450);
+    } catch (error) {
+      showToast(error.message || 'Unable to sign in. Please try again.');
+      btn.disabled = false;
+      label.textContent = 'Sign In';
+    }
+  });
+
+  // Social sign-in is intentionally unavailable until OAuth providers are configured.
+  document.querySelectorAll('.social button').forEach(button => {
+    button.addEventListener('click', () => showToast('Google/GitHub sign-in is not configured yet. Use email and password.'));
+  });
+</script>
+</body>
+</html>
