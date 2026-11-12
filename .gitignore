@@ -1,0 +1,22 @@
+node_modules
+dist
+.env
+*.log
+.DS_Store
+coverage
+.terraform
+*.tfstate*
+
+# Environment secrets
+.env.*
+!.env.example
+
+# Editor and temporary backups
+*.bak
+*.backup
+*.tmp
+
+# Runtime and test artifacts
+.nyc_output
+playwright-report
+test-results

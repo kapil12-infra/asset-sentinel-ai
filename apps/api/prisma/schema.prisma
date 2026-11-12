@@ -1,0 +1,169 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String?
+  provider     String   @default("local")
+  role         String   @default("Platform Engineer")
+  org          String   @default("My Organization")
+  tokensUsed   Int      @default(0)
+  prefs        Json?
+  createdAt    DateTime @default(now())
+
+  projects     Project[]
+  apiKeys      ApiKey[]
+  integrations Integration[]
+  team         TeamMember[]
+  agents       Agent[]
+  activity     Activity[]
+}
+
+model Project {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  sub       String    @default("")
+  type      String    @default("Web App")
+  desc      String    @default("")
+  state     String    @default("In Progress")
+  status    String    @default("none")
+  issues    Int       @default(0)
+  stack     String[]
+  slug      String    @unique
+  lastRun   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  files        ProjectFile[]
+  runs         TestRun[]
+  scan         Scan?
+  environments Environment[]
+
+  @@index([userId])
+}
+
+model ProjectFile {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  path      String
+  content   String   @default("")
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, path])
+}
+
+model TestRun {
+  id          Int      @id @default(autoincrement())
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  suite       String
+  status      String
+  total       Int
+  passed      Int
+  failed      Int
+  skipped     Int      @default(0)
+  durationSec Int
+  startedAt   DateTime @default(now())
+  suites      Json
+  cases       Json
+  logs        Json
+
+  @@index([projectId])
+}
+
+model Scan {
+  id              String          @id @default(uuid())
+  projectId       String          @unique
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  at              DateTime        @default(now())
+  vulnerabilities Vulnerability[]
+}
+
+model Vulnerability {
+  id       String  @id @default(uuid())
+  scanId   String
+  scan     Scan    @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  name     String
+  severity String
+  location String
+  fix      String
+  fixed    Boolean @default(false)
+
+  @@index([scanId])
+}
+
+model Environment {
+  id           String    @id @default(uuid())
+  projectId    String
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage        String
+  url          String
+  status       String    @default("Stopped")
+  lastDeployAt DateTime?
+
+  @@unique([projectId, stage])
+}
+
+model Integration {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key         String
+  tokenEnc    String
+  connectedAt DateTime @default(now())
+
+  @@unique([userId, key])
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  prefix    String
+  last4     String
+  hash      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model TeamMember {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  email  String
+  role   String
+  status String @default("Invited")
+}
+
+model Agent {
+  id          String @id @default(uuid())
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        String
+  name        String
+  description String
+  icon        String @default("cpu")
+}
+
+model Activity {
+  id     String   @id @default(uuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text   String
+  type   String   @default("ok")
+  at     DateTime @default(now())
+
+  @@index([userId, at])
+}
