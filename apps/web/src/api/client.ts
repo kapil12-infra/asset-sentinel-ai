@@ -1,7 +1,7 @@
 import type {
   Agent, ActivityItem, ApiKeyInfo, AuthResponse, Billing, DashboardSummary, DeployMethod, Environment,
-  Integration, MonitoringRange, MonitoringSnapshot, Preferences, Project, ProjectFile, ProjectType,
-  RunSuite, Scan, SpaAudit, SpaChecklistItem, TeamMember, TestRun, TestRunSummary, User, Vulnerability,
+  FunctionalCatalog, TestingCatalog, Integration, MonitoringRange, MonitoringSnapshot, Preferences, Project, ProjectFile, ProjectType,
+  RunSuite, Scan, SpaAudit, SpaAuditRequest, SpaChecklistItem, TeamMember, TestRun, TestRunSummary, User, Vulnerability,
 } from '@asset-sentinel/shared';
 
 const BASE = (import.meta.env.VITE_API_URL as string | undefined) ?? '/api';
@@ -83,7 +83,9 @@ export const api = {
     assist: (id: string, path: string, prompt: string) => post<{ content: string }>(`/projects/${id}/assist`, { path, prompt }),
   },
   tests: {
-    run: (projectId: string, suite: RunSuite) => post<TestRun>(`/projects/${projectId}/tests`, { suite }),
+    catalog: () => get<TestingCatalog>('/tests/catalog'),
+    functionalCatalog: () => get<FunctionalCatalog>('/tests/catalog/functional'),
+    run: (projectId: string, suite: RunSuite, moduleIds?: string[]) => post<TestRun>(`/projects/${projectId}/tests`, { suite, ...(moduleIds ? { moduleIds } : {}) }),
     list: (o: { projectId?: string; suite?: string } = {}) => get<TestRunSummary[]>(`/tests${qs(o)}`),
     get: (id: number) => get<TestRun>(`/tests/${id}`),
     rerun: (id: number) => post<TestRun>(`/tests/${id}/rerun`),
@@ -93,7 +95,7 @@ export const api = {
     get: (id: string) => get<Scan | null>(`/projects/${id}/scan`),
     fixAll: (id: string) => post<{ fixed: number }>(`/projects/${id}/scan/fix-all`),
     fix: (vulnId: string) => post<Vulnerability>(`/security/vulnerabilities/${vulnId}/fix`),
-    spaAudit: (id: string) => post<SpaAudit>(`/projects/${id}/spa-audit`),
+    spaAudit: (id: string, body: SpaAuditRequest) => post<SpaAudit>(`/projects/${id}/spa-audit`, body),
     spaChecklist: () => get<SpaChecklistItem[]>('/security/spa-checklist'),
   },
   deploy: {

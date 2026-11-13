@@ -1,5 +1,5 @@
 
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException, ServiceUnavailableException } from '@nestjs/common';
 import type {
   Scan,
   Severity,
@@ -13,6 +13,8 @@ import { PrismaService } from '../core/prisma.service';
 import { ProjectsService } from '../projects/projects.service';
 import { makeFindings } from './vulns';
 import { analyzeFiles, extractEndpoints } from './spa-vapt';
+import { SpaAuditDto } from './spa-audit.dto';
+import { SpaScannerClient } from './spa-scanner.client';
 
 type DbVuln = {
   id: string;
@@ -29,6 +31,7 @@ export class SecurityService {
     private prisma: PrismaService,
     private projects: ProjectsService,
     private activity: ActivityService,
+    private spaScanner: SpaScannerClient,
   ) {}
 
   private vuln(v: DbVuln): Vulnerability {
@@ -92,7 +95,27 @@ export class SecurityService {
   async spaAudit(
     userId: string,
     projectId: string,
+    request: SpaAuditDto,
   ): Promise<SpaAudit> {
+    const mode = request.mode ?? 'source';
+
+    if (mode !== 'source' && !request.authorizationConfirmed) {
+      throw new BadRequestException(
+        'Explicit authorization is required before dynamic scanning.',
+      );
+    }
+
+    if (mode !== 'source') {
+      if (process.env.SPA_SCANNER_ENABLED !== 'true') {
+        throw new ServiceUnavailableException(
+          'Dynamic SPA scanning is disabled until scanner network isolation and target validation are verified.',
+        );
+      }
+      throw new ServiceUnavailableException(
+        'Dynamic SPA scanning is not yet approved for execution.',
+      );
+    }
+
     const project = await this.projects.find(userId, projectId);
 
     const files = await this.prisma.projectFile.findMany({
@@ -111,7 +134,7 @@ export class SecurityService {
         phase: 1,
         status: files.length > 0 ? 'partial' : 'skipped',
         message: files.length > 0
-          ? 'Static source heuristics and supported literal endpoint extraction completed. Dedicated source-map reconstruction and secret scanning are not configured.'
+          ? 'Static source analysis, source-map inspection, credential-pattern detection with redacted evidence, and supported endpoint extraction completed. Public deployment exposure and credential validity have not been verified.'
           : 'No project source files were available to scan.',
         checksRun: files.length,
         findings: findings.filter((item) => item.phase === 1).length,
@@ -152,6 +175,8 @@ export class SecurityService {
     return {
       projectId,
       at: new Date().toISOString(),
+      mode,
+      ...(request.targetUrl ? { targetUrl: request.targetUrl } : {}),
       filesScanned: files.length,
       phases,
       endpoints,

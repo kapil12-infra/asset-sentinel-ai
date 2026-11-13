@@ -7,6 +7,13 @@
 export type ProjectType = 'Web App' | 'API' | 'Mobile' | 'Full Stack' | 'Platform';
 export type ProjectStatus = 'none' | 'pass' | 'warn';
 export type ProjectState = 'Planning' | 'In Progress' | 'In Review' | 'Live';
+// Official user-facing QA testing categories.
+export type TestingCategoryId =
+  | 'functional' | 'api' | 'ui' | 'integration' | 'database'
+  | 'regression' | 'smoke' | 'sanity' | 'compatibility'
+  | 'performance' | 'security' | 'accessibility';
+
+// Legacy suite identifiers remain supported by existing APIs.
 export type SuiteKey = 'functional' | 'api' | 'automation' | 'regression' | 'performance';
 export type RunSuite = SuiteKey | 'all';
 export type Severity = 'Critical' | 'High' | 'Medium' | 'Low';
@@ -60,24 +67,139 @@ export interface ProjectFile {
 export interface TestCase {
   suite: string;
   name: string;
-  result: 'Passed' | 'Failed';
+  result:
+    | 'Passed'
+    | 'Failed'
+    | 'Skipped'
+    | 'Blocked'
+    | 'Error'
+    | 'Not Run'
+    | 'Awaiting Approval';
   duration: string;
   error?: string;
+  testCaseId?: string;
+  moduleId?: TestingCategoryId;
+  subcategoryId?: string;
+  objective?: string;
+  preconditions?: string[];
+  steps?: string[];
+  expectedResult?: string;
+  actualResult?: string;
+  status?: TestExecutionStatus;
+  durationMs?: number;
+  evidence?: TestExecutionEvidence[];
+  runner?: string;
+  startedAt?: string;
+  completedAt?: string;
 }
+
+export type TestExecutionStatus =
+  | 'queued'
+  | 'running'
+  | 'passed'
+  | 'failed'
+  | 'skipped'
+  | 'blocked'
+  | 'error'
+  | 'not_run'
+  | 'awaiting_approval';
+
+export interface TestExecutionEvidence {
+  type: 'log' | 'screenshot' | 'response' | 'trace' | 'report';
+  name: string;
+  location?: string;
+  contentType?: string;
+  capturedAt?: string;
+}
+
+export interface TestCaseResult {
+  testCaseId: string;
+  moduleId: TestingCategoryId;
+  subcategoryId: string;
+  name: string;
+  status: TestExecutionStatus;
+  preconditions: string[];
+  steps: string[];
+  expectedResult: string;
+  actualResult?: string;
+  durationMs: number;
+  error?: string;
+  evidence: TestExecutionEvidence[];
+  startedAt?: string;
+  completedAt?: string;
+  runner?: string;
+}
+
+export interface FunctionalTestDefinition {
+  id: string;
+  name: string;
+  objective: string;
+  preconditions: string[];
+  steps: string[];
+  expectedResult: string;
+  executionStatus: 'planned';
+}
+
+export interface FunctionalCategory {
+  id: string;
+  name: string;
+  description: string;
+  tests: FunctionalTestDefinition[];
+}
+
+export interface FunctionalCatalog {
+  category: 'functional';
+  label: string;
+  totalCategories: number;
+  totalCases: number;
+  categories: FunctionalCategory[];
+}
+
+export interface TestingModule {
+  id: string;
+  name: string;
+  description: string;
+  status: 'catalogued' | 'planned';
+  subcategoryCount: number;
+  testCaseCount: number;
+}
+
+export interface TestingCatalog {
+  platform: string;
+  totalModules: number;
+  totalCatalogued: number;
+  totalPlanned: number;
+  modules: TestingModule[];
+}
+
+export type QaStageStatus =
+  | 'pending'
+  | 'running'
+  | 'passed'
+  | 'failed'
+  | 'partial'
+  | 'skipped';
 
 export interface TestSuiteResult {
   name: string;
   count: number;
   failed: number;
   durationSec: number;
+  key?: string;
+  status?: QaStageStatus;
+  message?: string;
+  checksRun?: number;
+  startedAt?: string;
+  completedAt?: string;
 }
 
 export interface TestRunSummary {
   id: number;
   suite: RunSuite;
   projectId: string;
+  environmentId?: string | null;
   projectName: string;
-  status: 'pass' | 'fail';
+  status: 'running' | 'pass' | 'fail' | 'partial';
   total: number;
   passed: number;
   failed: number;
@@ -240,6 +362,35 @@ export interface SpaDiscoveredEndpoint {
   method: string;
 }
 
+export interface SpaBrowserReconnaissance {
+  target: string;
+  pagesScanned: number;
+  pages: Array<{
+    url: string;
+    title: string;
+    forms: Array<{
+      action: string;
+      method: string;
+    }>;
+    storage: {
+      localStorageKeys: string[];
+      sessionStorageKeys: string[];
+    };
+  }>;
+  endpoints: Array<{
+    url: string;
+    method: string;
+    status: number;
+  }>;
+  errors: Array<{
+    url: string;
+    error: string;
+  }>;
+  blockedRequests: string[];
+  timedOut: boolean;
+  scope: string;
+}
+
 export interface SpaAudit {
   projectId: string;
   at: string;
@@ -249,4 +400,5 @@ export interface SpaAudit {
   phases?: SpaPhaseResult[];
   endpoints?: SpaDiscoveredEndpoint[];
   findings: SpaFinding[];
+  browserReconnaissance?: SpaBrowserReconnaissance;
 }

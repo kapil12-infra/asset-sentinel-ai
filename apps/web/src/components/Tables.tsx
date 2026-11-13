@@ -18,7 +18,7 @@ export function RunTable({ runs, showProject }: { runs: TestRunSummary[]; showPr
             <td><button className="lnk" onClick={() => open(r.id)} style={{ color: 'var(--violet-2)' }}>#{r.id}</button></td>
             {showProject && <td>{r.projectName}</td>}
             <td>{r.suite}</td>
-            <td><span className={`status ${r.status === 'pass' ? 'pass' : 'fail'}`}>{r.passed}/{r.total} passed</span></td>
+            <td><span className={`status ${r.status === 'pass' ? 'pass' : r.status === 'running' ? 'run' : r.status === 'partial' ? 'warn' : 'fail'}`}>{r.status === 'running' ? 'Running' : r.status === 'partial' ? `${r.passed}/${r.total} passed · Partial` : r.status === 'fail' ? `${r.passed}/${r.total} passed · Failed` : `${r.passed}/${r.total} passed`}</span></td>
             <td className="hide-m">{r.durationSec}s</td>
             <td>{timeAgo(r.startedAt)}</td>
           </tr>
@@ -36,7 +36,12 @@ export function RunTable({ runs, showProject }: { runs: TestRunSummary[]; showPr
           <div className="tw"><table><thead><tr><th>Test</th><th>Result</th><th>Time</th></tr></thead><tbody>
             {detail.cases.map((c, i) => (
               <tr key={i}><td>{c.name}<small style={{ display: 'block', color: 'var(--muted)' }}>{c.suite}{c.error ? ` · ${c.error}` : ''}</small></td>
-                <td><span className={`status ${c.result === 'Passed' ? 'pass' : 'fail'}`}>{c.result}</span></td><td>{c.duration}</td></tr>
+                <td><span className={`status ${
+                  c.result === 'Passed' ? 'pass'
+                  : c.result === 'Failed' || c.result === 'Error' ? 'fail'
+                  : c.result === 'Skipped' || c.result === 'Not Run' ? 'none'
+                  : 'warn'
+                }`}>{c.result}</span></td><td>{c.duration}</td></tr>
             ))}
           </tbody></table></div>
           <h3 className="sec">Log</h3>

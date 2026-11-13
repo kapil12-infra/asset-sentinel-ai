@@ -11,6 +11,7 @@ export function AuthPage({ mode: initial }: { mode: 'login' | 'signup' }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -46,7 +47,30 @@ export function AuthPage({ mode: initial }: { mode: 'login' | 'signup' }) {
           <div className="fl"><label htmlFor="n">Full name</label><input id="n" className="fi" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} autoComplete="name" /></div>
         )}
         <div className="fl"><label htmlFor="e">Email</label><input id="e" type="email" className="fi" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" /></div>
-        <div className="fl"><label htmlFor="p">Password</label><input id="p" type="password" className="fi" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={mode === 'signup' ? 8 : 1} autoComplete={mode === 'login' ? 'current-password' : 'new-password'} /></div>
+        <div className="fl">
+          <label htmlFor="p">Password</label>
+          <div className="password-wrapper">
+            <input
+              id="p"
+              type={showPassword ? 'text' : 'password'}
+              className="fi"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={mode === 'signup' ? 8 : 1}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            />
+            <button
+              type="button"
+              className="password-eye"
+              onClick={() => setShowPassword((prev) => !prev)}
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
+              aria-pressed={showPassword}
+            >
+              {showPassword ? '🙈' : '👁'}
+            </button>
+          </div>
+        </div>
         {error && <p className="err" role="alert">{error}</p>}
         <button className="btn primary" disabled={busy}>{busy ? 'Please wait…' : mode === 'login' ? 'Sign in' : 'Create account'}</button>
         <p className="swap">

@@ -342,3 +342,32 @@ a.btn{text-decoration:none}
 .swap button{color:var(--violet-2);font-weight:600}
 .topbar .menu-btn{display:none}
 @media (max-width:860px){.topbar .menu-btn{display:grid}}
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.password-wrapper .fi {
+  width: 100%;
+  padding-right: 48px;
+}
+
+.password-eye {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  color: var(--muted);
+  z-index: 2;
+}
+
+.password-eye:focus-visible {
+  outline: 2px solid var(--primary);
+  border-radius: 4px;
+}

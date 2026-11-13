@@ -48,6 +48,63 @@ export function Dashboard() {
         ))}
       </div>
 
+      <section className="panel spa-dashboard">
+        <div className="toolbar">
+          <div className="grow">
+            <h2><Icon name="shield" />SPA Security Scanner</h2>
+            <p className="muted">
+              Four-phase security assessment for single-page applications.
+            </p>
+          </div>
+          <span className="sev Medium">STATIC MODE ONLY</span>
+          <button className="btn primary sm" onClick={() => nav('/security')}>
+            Open Security <Icon name="right" />
+          </button>
+        </div>
+
+        <div className="grid-cards">
+          {[
+            {
+              id: 1,
+              title: 'Source reconnaissance',
+              detail: 'Routes, bundles, source maps and exposed configuration',
+              status: 'Static checks available',
+            },
+            {
+              id: 2,
+              title: 'Browser crawling',
+              detail: 'Playwright crawling and traffic interception',
+              status: 'Not activated',
+            },
+            {
+              id: 3,
+              title: 'Client-side assessment',
+              detail: 'DOM XSS, browser storage and authorization checks',
+              status: 'Static checks only',
+            },
+            {
+              id: 4,
+              title: 'Backend API testing',
+              detail: 'BOLA, mass assignment, CORS and GraphQL checks',
+              status: 'Static checks only',
+            },
+          ].map((phase) => (
+            <article className="panel" key={phase.id}>
+              <small>PHASE {phase.id}</small>
+              <h3>{phase.title}</h3>
+              <p>{phase.detail}</p>
+              <strong>{phase.status}</strong>
+            </article>
+          ))}
+        </div>
+
+        <p className="muted">
+          Dynamic scanner and egress proxy images are built. Live scanning
+          remains disabled until runtime network isolation and API integration
+          are verified. No live scan results are being reported.
+        </p>
+      </section>
+
       <div className="grid g2">
         <div className="panel">
           <h2><Icon name="layers" />Recent projects<span className="lnk" onClick={() => nav('/projects')}>View all<Icon name="right" /></span></h2>

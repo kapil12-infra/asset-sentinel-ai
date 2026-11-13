@@ -18,6 +18,9 @@ export function SpaAuditPanel({ projectId }: { projectId: string }) {
   const [result, setResult] = useState<SpaAuditResult | null>(null);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mode, setMode] = useState<'source' | 'dynamic' | 'both'>('source');
+  const [targetUrl, setTargetUrl] = useState('');
+  const [authorizationConfirmed, setAuthorizationConfirmed] = useState(false);
 
   async function loadChecklist() {
     try {
@@ -33,7 +36,11 @@ export function SpaAuditPanel({ projectId }: { projectId: string }) {
     setRunning(true);
     setError(null);
     try {
-      const audit = await api.security.spaAudit(projectId);
+      const audit = await api.security.spaAudit(projectId, {
+        mode,
+        ...(targetUrl.trim() ? { targetUrl: targetUrl.trim() } : {}),
+        authorizationConfirmed,
+      });
       setResult(audit);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'SPA audit failed');
@@ -59,6 +66,33 @@ export function SpaAuditPanel({ projectId }: { projectId: string }) {
         </button>
       </div>
 
+      <div className="panel">
+        <h3>Assessment configuration</h3>
+        <label htmlFor="spa-mode">Scan mode</label>
+        <select id="spa-mode" value={mode} onChange={(e) => setMode(e.target.value as typeof mode)}>
+          <option value="source">Source analysis (available)</option>
+          <option value="dynamic">Dynamic scan (scanner not configured)</option>
+          <option value="both">Source + dynamic (scanner not configured)</option>
+        </select>
+        <label htmlFor="spa-target">Authorized application URL (optional)</label>
+        <input
+          id="spa-target"
+          type="url"
+          placeholder="https://staging.example.com"
+          value={targetUrl}
+          onChange={(e) => setTargetUrl(e.target.value)}
+        />
+        <label>
+          <input
+            type="checkbox"
+            checked={authorizationConfirmed}
+            onChange={(e) => setAuthorizationConfirmed(e.target.checked)}
+          />
+          I confirm that I am authorized to test this application.
+        </label>
+        <p className="muted">Dynamic modes require explicit authorization and a configured scanner. Only source analysis is currently available.</p>
+      </div>
+
       <div className="grid-cards">
         {PHASES.map((phase) => {
           const count = findings.filter((f) => f.phase === phase.id).length;
@@ -68,6 +102,12 @@ export function SpaAuditPanel({ projectId }: { projectId: string }) {
               <h3>{phase.title}</h3>
               <p>{phase.description}</p>
               <strong>{result ? `${count} finding${count === 1 ? '' : 's'}` : 'Not run yet'}</strong>
+              {result?.phases?.find((item) => item.phase === phase.id) && (
+                <>
+                  <p><strong>Status:</strong> {result.phases.find((item) => item.phase === phase.id)?.status}</p>
+                  <small>{result.phases.find((item) => item.phase === phase.id)?.message}</small>
+                </>
+              )}
             </article>
           );
         })}
@@ -95,6 +135,27 @@ export function SpaAuditPanel({ projectId }: { projectId: string }) {
             ))}
           </div>
 
+          {result.endpoints && result.endpoints.length > 0 && (
+            <div>
+              <h3>Discovered API endpoints ({result.endpoints.length})</h3>
+              <div className="table-wrap">
+                <table>
+                  <thead><tr><th>Method</th><th>Endpoint</th><th>Source file</th><th>Line</th></tr></thead>
+                  <tbody>
+                    {result.endpoints.map((endpoint, index) => (
+                      <tr key={`${endpoint.sourceFile}:${endpoint.line}:${index}`}>
+                        <td>{endpoint.method}</td>
+                        <td><code>{endpoint.path}</code></td>
+                        <td><code>{endpoint.sourceFile}</code></td>
+                        <td>{endpoint.line}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {findings.length === 0 ? (
             <p className="empty">No findings from the configured static checks. This is not proof that the application is secure.</p>
           ) : (
@@ -119,6 +180,12 @@ export function SpaAuditPanel({ projectId }: { projectId: string }) {
                       <td>
                         <p>{finding.detail}</p>
                         <small><strong>Fix:</strong> {finding.fix}</small>
+                        <small>
+                          Source: {finding.source ?? 'static'} ·
+                          Confidence: {finding.confidence ?? 'unknown'} ·
+                          Verified: {finding.verified ? 'Yes' : 'No'}
+                        </small>
+                        {finding.evidence && <pre className="code-block">{finding.evidence}</pre>}
                       </td>
                     </tr>
                   ))}

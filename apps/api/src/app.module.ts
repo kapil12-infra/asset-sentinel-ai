@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { AiAnalysisModule } from './ai-analysis/ai-analysis.module';
 import { AgentsModule } from './agents/agents.module';
 import { AuthModule } from './auth/auth.module';
 import { BuildsModule } from './builds/builds.module';
@@ -24,6 +25,7 @@ import { HealthController } from './health.controller';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.env', '../../.env'] }),
     CoreModule,
+    AiAnalysisModule,
     AuthModule,
     DashboardModule,
     ProjectsModule,

@@ -9,7 +9,7 @@ const checks = (path: string, content: string) =>
 
 describe('SPA VAPT static analysis', () => {
   it('flags source maps and sourcemap build flags', () => {
-    expect(checks('dist/main.js.map', '{}')).toContain('Source map exposed');
+    expect(checks('dist/main.js.map', '{}')).toContain('Source map file uploaded');
     expect(checks('vite.config.ts', 'build: { sourcemap: true }'))
       .toContain('Source maps enabled in build config');
   });
@@ -77,7 +77,7 @@ describe('SPA VAPT static analysis', () => {
       run('a.ts', many).filter(
         (f) => f.check === 'eval / Function constructor',
       ),
-    ).toHaveLength(5);
+    ).toHaveLength(20);
   });
 
   it('marks heuristic findings as unverified static findings', () => {
@@ -93,6 +93,55 @@ describe('SPA VAPT static analysis', () => {
   it('checklist covers all four phases', () => {
     expect(new Set(SPA_CHECKLIST.map((i) => i.phase)))
       .toEqual(new Set([1, 2, 3, 4]));
+  });
+});
+
+
+describe('SPA VAPT Phase 1 enhanced analysis', () => {
+  it('inspects embedded source-map content for credentials', () => {
+    const map = JSON.stringify({
+      version: 3,
+      sources: ['src/config.ts'],
+      sourcesContent: [
+        "const apiKey = 'abcd1234efgh5678';",
+      ],
+    });
+
+    const findings = run('dist/app.js.map', map);
+
+    expect(findings.map((f) => f.check)).toContain(
+      'Hardcoded credential assignment',
+    );
+    expect(JSON.stringify(findings)).not.toContain('abcd1234efgh5678');
+  });
+
+  it('creates stable finding IDs for unchanged source', () => {
+    const first = run('src/app.ts', 'eval(userInput)');
+    const second = run('src/app.ts', 'eval(userInput)');
+
+    expect(first[0]?.id).toBe(second[0]?.id);
+  });
+
+  it('does not duplicate identical findings at the same location', () => {
+    const findings = run(
+      'src/app.ts',
+      'eval(userInput); eval(otherInput);',
+    );
+
+    expect(
+      findings.filter((f) => f.check === 'eval / Function constructor'),
+    ).toHaveLength(1);
+  });
+
+  it('does not report source-map files as proof of public exposure', () => {
+    const finding = run('dist/app.js.map', '{}').find(
+      (f) => f.check === 'Source map file uploaded',
+    );
+
+    expect(finding?.detail).toContain(
+      'does not by itself prove public deployment exposure',
+    );
+    expect(finding?.verified).toBe(false);
   });
 });
 

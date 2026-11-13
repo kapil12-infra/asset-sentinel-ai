@@ -1,7 +1,8 @@
-import { Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthUser, CurrentUser } from '../common/current-user.decorator';
 import { SPA_CHECKLIST } from './spa-vapt';
 import { SecurityService } from './security.service';
+import { SpaAuditDto } from './spa-audit.dto';
 
 @Controller()
 export class SecurityController {
@@ -23,8 +24,12 @@ export class SecurityController {
   }
 
   @Post('projects/:id/spa-audit')
-  spaAudit(@CurrentUser() user: AuthUser, @Param('id') id: string) {
-    return this.security.spaAudit(user.id, id);
+  spaAudit(
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() body: SpaAuditDto,
+  ) {
+    return this.security.spaAudit(user.id, id, body);
   }
 
   @Get('security/spa-checklist')
