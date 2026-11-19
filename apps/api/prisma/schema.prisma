@@ -26,6 +26,11 @@ model User {
   agents            Agent[]
   activity          Activity[]
   aiProviderConfigs AiProviderConfig[]
+  devices           Device[]
+  devicePools       DevicePool[]
+
+  mobileAppBuilds      MobileAppBuild[]
+  mobileTestExecutions MobileTestExecution[]
 }
 
 model AiProviderConfig {
@@ -226,4 +231,122 @@ model ProjectRepository {
   updatedAt      DateTime @updatedAt
 
   @@index([owner, repositoryName])
+}
+
+model Device {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform       String
+  externalId     String?
+  name           String
+  manufacturer   String?
+  model          String?
+  osVersion      String?
+  sdkVersion     String?
+  status         String    @default("offline")
+  connectionType String    @default("manual")
+  agentId        String?
+  lastSeenAt     DateTime?
+  metadata       Json?
+  poolMemberships DevicePoolDevice[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, platform, externalId])
+  @@index([userId, platform])
+  @@index([userId, status])
+}
+
+
+model MobileAppBuild {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalFilename String
+  packageName      String?
+  versionName      String?
+  versionCode      String?
+  storageProvider  String   @default("local")
+  storageKey       String
+  sha256           String
+  sizeBytes        BigInt
+  status           String   @default("uploaded")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  executions       MobileTestExecution[]
+
+  @@index([userId, createdAt])
+  @@index([userId, sha256])
+}
+
+model MobileTestExecution {
+  id                  String   @id @default(uuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buildId             String
+  build               MobileAppBuild @relation(fields: [buildId], references: [id], onDelete: Restrict)
+  provider            String
+  testType            String
+  status              String   @default("queued")
+  providerExecutionId String?
+  deviceConfig        Json?
+  testConfig          Json?
+  summary             Json?
+  errorMessage        String?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  durationSec         Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  artifacts           MobileTestArtifact[]
+
+  @@index([userId, createdAt])
+  @@index([buildId])
+  @@index([provider, providerExecutionId])
+  @@index([status])
+}
+
+model MobileTestArtifact {
+  id          String   @id @default(uuid())
+  executionId String
+  execution   MobileTestExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  type        String
+  filename    String
+  storageKey  String
+  contentType String?
+  sizeBytes   BigInt?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([executionId, createdAt])
+}
+
+
+model DevicePool {
+  id          String             @id @default(uuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  platform    String             @default("mixed")
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  devices     DevicePoolDevice[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model DevicePoolDevice {
+  poolId    String
+  deviceId  String
+  createdAt DateTime   @default(now())
+  pool      DevicePool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@id([poolId, deviceId])
+  @@index([deviceId])
 }
