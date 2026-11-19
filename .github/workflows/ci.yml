@@ -1,0 +1,32 @@
+name: CI
+on:
+  pull_request:
+  push:
+    branches: [develop, main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build:shared
+      - run: npx prisma generate --schema apps/api/prisma/schema.prisma
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: Dependency audit
+        run: npm audit --omit=dev --audit-level=high
+        continue-on-error: true
+
+  docker:
+    needs: verify
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -f infra/docker/api.Dockerfile -t asset-sentinel-api:ci .
+      - run: docker build -f infra/docker/web.Dockerfile -t asset-sentinel-web:ci .

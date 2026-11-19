@@ -1,0 +1,352 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String?
+  provider     String   @default("local")
+  role         String   @default("Platform Engineer")
+  org          String   @default("My Organization")
+  tokensUsed   Int      @default(0)
+  prefs        Json?
+  createdAt    DateTime @default(now())
+
+  projects          Project[]
+  apiKeys           ApiKey[]
+  integrations      Integration[]
+  team              TeamMember[]
+  agents            Agent[]
+  activity          Activity[]
+  aiProviderConfigs AiProviderConfig[]
+  devices           Device[]
+  devicePools       DevicePool[]
+
+  mobileAppBuilds      MobileAppBuild[]
+  mobileTestExecutions MobileTestExecution[]
+}
+
+model AiProviderConfig {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       String
+  model          String
+  encryptedKey   String
+  keyLast4       String
+  isActive       Boolean   @default(false)
+  lastTestStatus String?
+  lastTestedAt   DateTime?
+  lastTestError  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+model AiUsageLog {
+  id           String   @id @default(cuid())
+  userId       String
+  projectId    String?
+  provider     String
+  model        String
+  purpose      String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  latencyMs    Int      @default(0)
+  status       String
+  errorCode    String?
+  errorMessage String?
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Project {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  sub       String    @default("")
+  type      String    @default("Web App")
+  desc      String    @default("")
+  state     String    @default("In Progress")
+  status    String    @default("none")
+  issues    Int       @default(0)
+  stack     String[]
+  slug      String    @unique
+  lastRun   DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  files        ProjectFile[]
+  runs         TestRun[]
+  scan         Scan?
+  environments Environment[]
+  repository   ProjectRepository?
+
+  @@index([userId])
+}
+
+model ProjectFile {
+  id        String   @id @default(uuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  path      String
+  content   String   @default("")
+  updatedAt DateTime @updatedAt
+
+  @@unique([projectId, path])
+}
+
+model TestRun {
+  id            Int          @id @default(autoincrement())
+  projectId     String
+  project       Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  environmentId String?
+  environment   Environment? @relation(fields: [environmentId], references: [id], onDelete: SetNull)
+  suite         String
+  status        String
+  total         Int
+  passed        Int
+  failed        Int
+  skipped       Int          @default(0)
+  durationSec   Int
+  startedAt     DateTime     @default(now())
+  suites        Json
+  cases         Json
+  logs          Json
+
+  @@index([projectId])
+  @@index([environmentId])
+}
+
+model Scan {
+  id              String          @id @default(uuid())
+  projectId       String          @unique
+  project         Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  at              DateTime        @default(now())
+  vulnerabilities Vulnerability[]
+}
+
+model Vulnerability {
+  id       String  @id @default(uuid())
+  scanId   String
+  scan     Scan    @relation(fields: [scanId], references: [id], onDelete: Cascade)
+  name     String
+  severity String
+  location String
+  fix      String
+  fixed    Boolean @default(false)
+
+  @@index([scanId])
+}
+
+model Environment {
+  id           String    @id @default(uuid())
+  projectId    String
+  project      Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  stage        String
+  url          String
+  status       String    @default("Stopped")
+  lastDeployAt DateTime?
+  testRuns     TestRun[]
+
+  @@unique([projectId, stage])
+}
+
+model Integration {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  key         String
+  tokenEnc    String
+  connectedAt DateTime @default(now())
+
+  @@unique([userId, key])
+}
+
+model ApiKey {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  prefix    String
+  last4     String
+  hash      String   @unique
+  createdAt DateTime @default(now())
+}
+
+model TeamMember {
+  id     String @id @default(uuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name   String
+  email  String
+  role   String
+  status String @default("Invited")
+}
+
+model Agent {
+  id          String @id @default(uuid())
+  userId      String
+  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind        String
+  name        String
+  description String
+  icon        String @default("cpu")
+}
+
+model Activity {
+  id     String   @id @default(uuid())
+  userId String
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  text   String
+  type   String   @default("ok")
+  at     DateTime @default(now())
+
+  @@index([userId, at])
+}
+
+model ProjectRepository {
+  id             String   @id @default(uuid())
+  projectId      String   @unique
+  project        Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  provider       String   @default("github")
+  owner          String
+  repositoryName String
+  repositoryUrl  String
+  defaultBranch  String
+  isPrivate      Boolean  @default(false)
+  tokenEnc       String
+  connectedAt    DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([owner, repositoryName])
+}
+
+model Device {
+  id             String    @id @default(uuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platform       String
+  externalId     String?
+  name           String
+  manufacturer   String?
+  model          String?
+  osVersion      String?
+  sdkVersion     String?
+  status         String    @default("offline")
+  connectionType String    @default("manual")
+  agentId        String?
+  lastSeenAt     DateTime?
+  metadata       Json?
+  poolMemberships DevicePoolDevice[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([userId, platform, externalId])
+  @@index([userId, platform])
+  @@index([userId, status])
+}
+
+
+model MobileAppBuild {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  originalFilename String
+  packageName      String?
+  versionName      String?
+  versionCode      String?
+  storageProvider  String   @default("local")
+  storageKey       String
+  sha256           String
+  sizeBytes        BigInt
+  status           String   @default("uploaded")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  executions       MobileTestExecution[]
+
+  @@index([userId, createdAt])
+  @@index([userId, sha256])
+}
+
+model MobileTestExecution {
+  id                  String   @id @default(uuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  buildId             String
+  build               MobileAppBuild @relation(fields: [buildId], references: [id], onDelete: Restrict)
+  provider            String
+  testType            String
+  status              String   @default("queued")
+  providerExecutionId String?
+  deviceConfig        Json?
+  testConfig          Json?
+  summary             Json?
+  errorMessage        String?
+  startedAt           DateTime?
+  completedAt         DateTime?
+  durationSec         Int?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  artifacts           MobileTestArtifact[]
+
+  @@index([userId, createdAt])
+  @@index([buildId])
+  @@index([provider, providerExecutionId])
+  @@index([status])
+}
+
+model MobileTestArtifact {
+  id          String   @id @default(uuid())
+  executionId String
+  execution   MobileTestExecution @relation(fields: [executionId], references: [id], onDelete: Cascade)
+  type        String
+  filename    String
+  storageKey  String
+  contentType String?
+  sizeBytes   BigInt?
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([executionId, createdAt])
+}
+
+
+model DevicePool {
+  id          String             @id @default(uuid())
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  platform    String             @default("mixed")
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  devices     DevicePoolDevice[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+model DevicePoolDevice {
+  poolId    String
+  deviceId  String
+  createdAt DateTime   @default(now())
+  pool      DevicePool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+  device    Device     @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+
+  @@id([poolId, deviceId])
+  @@index([deviceId])
+}

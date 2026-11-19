@@ -1,0 +1,23 @@
+{
+  "name": "asset-sentinel-ai",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Asset Sentinel AI Build Studio: build, test, secure and deploy apps with AI",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @asset-sentinel/shared",
+    "build": "npm run build:shared && npm run build -w @asset-sentinel/api && npm run build -w @asset-sentinel/web",
+    "dev:api": "npm run start:dev -w @asset-sentinel/api",
+    "dev:web": "npm run dev -w @asset-sentinel/web",
+    "typecheck": "npm run build:shared && npm run typecheck -w @asset-sentinel/api && npm run typecheck -w @asset-sentinel/web",
+    "test": "npm test -w @asset-sentinel/api",
+    "db:push": "npm run db:push -w @asset-sentinel/api",
+    "db:seed": "npm run db:seed -w @asset-sentinel/api"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
